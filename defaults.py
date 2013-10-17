@@ -53,3 +53,4 @@ def dict_add_recursive(source, target):
 			dict_add_recursive(source[key], target[key])
 		else:
 			target[key] = source[key]
+	return target

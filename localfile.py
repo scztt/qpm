@@ -10,7 +10,8 @@ class LocalDataFile:
 	}
 
 	def __init__(self, path, options={}):
-		defaults.dict_add_recursive(self.default_options, options)	
+		options = defaults.dict_add_recursive(options, dict(self.default_options))
+		print options
 		defaults.load_user_defaults('LocalDataFile', options)
 		self.options = options
 		self.path = path
