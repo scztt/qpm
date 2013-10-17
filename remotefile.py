@@ -29,7 +29,7 @@ class RemoteDataFile:
 
 	def get(self, force_reload=False):
 		if force_reload or (time.time() - self.last_fetched) > self.options['cache_timeout']:
-			self.fetch_data(force_reload)
+			self.fetch_data()
 		return self.local_cache.get()
 
 	def fetch_data(self):

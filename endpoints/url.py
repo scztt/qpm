@@ -3,15 +3,17 @@ from base import EndpointBase
 
 class UrlEndpoint(EndpointBase):
 	types = ['http://', 'https://', 'ftp://']
-	extensions = ['tar', 'zip']
+	extensions = ['tar', 'zip', 'json']
+	compressed_extensions = ['tar', 'zip']
+
 	pattern = '(?P<url>(?P<type>\w+://).*\.(?P<extension>\w+))'
 
 	@classmethod
 	def validate(cls, target):
 		try:
-			match = re.search(self.pattern, target)
+			match = re.search(cls.pattern, target)
 			match_group = match.groupdict()
-			return match_group['type'] in types and match_group['extension'] in extensions
+			return match_group['type'] in cls.types and match_group['extension'] in cls.extensions
 		except Exception, e:
 			print e
 		return False
@@ -38,11 +40,10 @@ class UrlEndpoint(EndpointBase):
 		return False
 
 	def get_to(self, local_dir):
-			tmp_file = tempfile.NamedTemporaryFile('r')
-			tmp_location = tmp_file.name
+		tmp_file = tempfile.NamedTemporaryFile('r')
+		tmp_location = tmp_file.name
 
 		try:
-
 			urllib.urlretrieve(self.target, tmp_location)
 
 			a = None
@@ -58,9 +59,8 @@ class UrlEndpoint(EndpointBase):
 
 			tmp_file.close()
 
-
-
-
-u = UrlEndpoint('https://github.com/rbarrois/python-semanticversion/archive/master.zip')
-print u.verify()
-print u.get_to('/Users/fsc/Desktop/sc-url')
+	def get_to_file(self, local_path):
+		try:
+			urllib.urlretrieve(self.target, local_path)
+		except Exception, e:
+			print e

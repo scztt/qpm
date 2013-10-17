@@ -1,4 +1,4 @@
-import json, os.path, os.environ, sys
+import json, os.path, sys
 import containers
 
 overrides_loaded = False
