@@ -7,7 +7,8 @@ from remotefile import RemoteDataFile
 store_location = os.path.expanduser('~/Library/Application Support/SuperCollider/qpm')
 
 base_repo_list = [
-	'https://github.com/scztt/qpm/raw/master/sample_repo.json'
+	'https://github.com/scztt/qpm/raw/master/sample_repo.json',
+	'https://github.com/scztt/qpm/raw/master/sample_repo2.json'
 ]
 
 repo_name_pattern = '[:/_\.]+'
@@ -58,5 +59,5 @@ class QuarkStore:
 				return package
 
 q = QuarkStore()
-print q.get_package('test_quark')
+print q.get_package('test_quark2')
 
