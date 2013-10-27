@@ -1,4 +1,5 @@
 *.pyc
 bin/
-lib/
+/lib
+/include
 /.Python
