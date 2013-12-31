@@ -8,7 +8,6 @@ parser = argparse.ArgumentParser()
 parser.add_argument('action', help='action to perform', choices=actions_list)
 parser.add_argument('--path', help='root path of quark', nargs='?', default=os.getcwd())
 parser.add_argument('-j', '--json', help='show json result output', action='store_true')
-parser.add_argument('-n', '--noninteractive', help='Do not ask for user input. Command may fail if options are missing.', action='store_true')
 
 def validate_path(pathname, must_exist=True):
 	pathname = os.path.expandvars(os.path.expanduser(pathname))
@@ -18,7 +17,7 @@ def validate_path(pathname, must_exist=True):
 		pathname = os.path.join(os.getcwd(), pathname)
 
 	if must_exist and not(os.path.exists(pathname)):
-		raise IOError('Path doesn\'t exist. (%s)' % pathname)
+		raise IOError('Path doesn\'t exist. (%)' % pathname)
 	else:
 		return pathname
 
@@ -28,30 +27,12 @@ def get_action_class(name):
 	return action
 
 def exec_action(parameters):
-	quark_path = parameters['path']
-	TheAction = get_action_class(parameters['action'])
-	if TheAction:
-		options = parameters
-		options['quark_path'] = validate_path(quark_path)
-		options['json'] = True
-		options['interactive'] = False
-
-		action = TheAction(options)
-		action.do()
-
-		return action.get_result()
-
-if __name__ == '__main__':
-	cmd_line = sys.argv[1:]
-	parameters, unknown = parser.parse_known_args(cmd_line)
-
 	quark_path = parameters.path
 
 	TheAction = get_action_class(parameters.action)
 	if TheAction:
 		options = TheAction.cmd_line_to_options(unknown)
 		options['quark_path'] = validate_path(quark_path)
-		options['interactive'] = not(parameters.noninteractive)
 
 		action = TheAction(options)
 		action.do()
@@ -71,5 +52,10 @@ if __name__ == '__main__':
 			for m in result['messages']: print m.message
 		else:
 			for m in result['messages']: print m.message
-			if result['reason']:
-				print '%s' % result['reason']
+			print '%s' % result['reason']
+
+if __name__ == '__main__':
+	cmd_line = sys.argv[1:]
+	parameters, unknown = parser.parse_known_args(cmd_line)
+
+	exec_action(parameters)

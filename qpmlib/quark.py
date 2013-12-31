@@ -1,5 +1,7 @@
 import qpm
-import os, os.path, json, collections
+import os, os.path, json, collections, stat
+
+import defaults
 
 quark_file_name = "quark.json"
 
@@ -14,8 +16,15 @@ def get_existing_quark(pathname):
 		return None
 
 class Quark:
-	def __init__(self, path):
+	default_options = {
+		'read_only': False
+	}
+
+	def __init__(self, path, options={}):
+		self.options = defaults.load_user_defaults('Quark', options, self.default_options)
+
 		self.path = path
+		self.read_only = self.options['read_only']
 		self.quarkfile_path = os.path.join(path, quark_file_name)
 		self.checkout_quarkfile()
 
@@ -29,6 +38,18 @@ class Quark:
 
 	def checkin_quarkfile(self):
 		self.save()
+
+	def set_read_only(self, read_only):
+		if self.read_only != read_only:
+			self.read_only = read_only
+			if self.read_only:
+				self.set_write_permissions(False)
+			else:
+				self.set_write_permissions(True)
+
+	def set_write_permissions(self, value):
+		# stat.S_IWRITE
+		pass
 
 	def load(self):
 		with open(self.quarkfile_path, 'r') as f:
@@ -55,6 +76,14 @@ class Quark:
 
 	def add_dependency(self, name, version):
 		self.dependencies[name] = version
+
+	def list_installed(self):
+		pass
+
+	def is_installed(self, package):
+		pass
+
+
 
 
 

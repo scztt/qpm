@@ -1,5 +1,5 @@
-import quark
-from generic_action import GenericAction
+from .. import quark
+from ..generic_action import GenericAction
 
 class FetchAction(GenericAction):
 	name = 'fetch'

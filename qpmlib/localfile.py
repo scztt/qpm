@@ -5,23 +5,16 @@ class LocalDataFile:
 	default_options = {
 		'reload_timeout': 1000 * 1000,
 		'create': True,
-		'default_data': [],
+		'default_data': {},
 		'write_on_delete': True
 	}
 
 	def __init__(self, path, options={}):
-		options = defaults.dict_add_recursive(options, dict(self.default_options))
-		print options
-		defaults.load_user_defaults('LocalDataFile', options)
-		self.options = options
+		self.options = defaults.load_user_defaults('LocalDataFile', options, self.default_options)
 		self.path = path
 		self.data = None
 		self.last_loaded = -1
 		self.data_changed = False
-
-	def __del__(self):
-		if self.options['write_on_delete']:
-			self.write()
 
 	def get(self, force_reload=False):
 		if force_reload or not(self.data) or (time.time() - self.last_loaded) > self.options['reload_timeout']:

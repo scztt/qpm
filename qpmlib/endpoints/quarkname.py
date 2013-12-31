@@ -9,3 +9,5 @@ class QuarknameEndpoint(EndpointBase):
 
 		if not(re.match(valid_quark_name_pattern, target)):
 			return False
+
+		quark_registry = os.path.abspath('')

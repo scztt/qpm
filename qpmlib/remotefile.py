@@ -9,9 +9,7 @@ class RemoteDataFile:
 	}
 
 	def __init__(self, url, local_path, options={}):	
-		defaults.dict_add_recursive(self.default_options, options)
-		defaults.load_user_defaults('RemoteDataFile', options)
-		self.options = options
+		self.options = defaults.load_user_defaults('RemoteDataFile', options, self.default_options)
 
 		self.url = url
 		if local_path:

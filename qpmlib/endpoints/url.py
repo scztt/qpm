@@ -1,5 +1,6 @@
-import urllib, re, tempfile, zipfile, tarfile
+import urllib, re, tempfile, zipfile, tarfile, shutil, os
 from base import EndpointBase
+from glob import glob
 
 class UrlEndpoint(EndpointBase):
 	types = ['http://', 'https://', 'ftp://']
@@ -42,6 +43,7 @@ class UrlEndpoint(EndpointBase):
 	def get_to(self, local_dir):
 		tmp_file = tempfile.NamedTemporaryFile('r')
 		tmp_location = tmp_file.name
+		tmp_extract_location = tempfile.mkdtemp()
 
 		try:
 			urllib.urlretrieve(self.target, tmp_location)
@@ -52,12 +54,16 @@ class UrlEndpoint(EndpointBase):
 			elif self.extension == 'tar':
 				a = tarfile.TarFile(tmp_location)
 			
-			a.extractall(local_dir)
+			a.extractall(tmp_extract_location)
 			a.close()
+			if os.path.exists(local_dir): shutil.rmtree(local_dir)
+			os.rename(tmp_extract_location, local_dir)
+			return True
 		except Exception, e:
-			#print e
+			print e
 
 			tmp_file.close()
+			return False
 
 	def get_to_file(self, local_path):
 		try:

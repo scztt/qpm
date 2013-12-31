@@ -22,7 +22,7 @@ def get_quark_map_file():
 	path = os.path.join(get_app_data_dir(), 'quarks.map')
 	return path
 
-def load_user_defaults(keys, defaults_dict):
+def load_user_defaults(keys, options_dict={}, defaults_dict={}):
 	global overrides_loaded
 	global default_overrides
 
@@ -38,18 +38,26 @@ def load_user_defaults(keys, defaults_dict):
 					print 'Failed to load ~/.qpm-defaults'					
 
 	overrides_root = default_overrides
+	final_dict = dict(defaults_dict)
 
 	for key in keys:
 		if overrides_root.has_key(key):
 			overrides_root = overrides_root[key]
 		else:
+			overrides_root = None
 			break
+	
+	if overrides_root:
+		dict_add_recursive(overrides_root, final_dict)
 
-		dict_add_recursive(overrides_root, defaults_dict)
+	dict_add_recursive(options_dict, final_dict)
+
+	return final_dict
 
 def dict_add_recursive(source, target):
 	for key in source:
 		if source[key].__class__ == dict:
+			if not(target.has_key(key)): target[key] = dict()
 			dict_add_recursive(source[key], target[key])
 		else:
 			target[key] = source[key]

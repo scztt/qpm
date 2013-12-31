@@ -1,7 +1,8 @@
-import qpm, quark, containers, ide, defaults
+from .. import quark, containers, ide, defaults
+from ..generic_action import GenericAction
+
 import argparse, sys, os
 from collections import OrderedDict
-from generic_action import GenericAction
 
 class InitAction(GenericAction):
 	name = 'init'
@@ -27,14 +28,14 @@ class InitAction(GenericAction):
 		parser.add_argument('--name', '-n', nargs='?', help='name of quark', default=default_options['name'])
 		parser.add_argument('--version', '-v', nargs='?', help='quark version', default=default_options['version'])
 		parser.add_argument('--sc', '-s', nargs='?', help='supercollider version', default=default_options['sc'])
-	 
+
 	 	return parser
 
 	def do(self):
 		options = self.options
 
 		if options['reinit']: 
-			self.report('WARNING: Deleted an existing quarkfile.')
+			self.msg('Deleted an existing quarkfile.', 'warning')
 			if os.path.exists(quark.get_quarkfile_path(options['path'])):
 				os.remove(quark.get_quarkfile_path(options['path']))
 
@@ -60,10 +61,10 @@ class InitAction(GenericAction):
 		new_quark.sc_version = options['sc']
 		new_quark.add_dependency('core', options['sc'])
 		new_quark.ide = {
-			'path': ide.find_ide(options['sc'], interactive=True),
+			'path': ide.find_ide(options['sc'], interactive=options['interactive']),
 			'name': 'sc-ide',
 		}
-		self.report('Using ide at: %s' % new_quark.ide['path'])
+		self.msg('Using ide at: %s' % new_quark.ide['path'])
 
 		new_quark.checkin_quarkfile()
 

@@ -10,9 +10,9 @@ class GitEndpoint(EndpointBase):
 
 	@classmethod
 	def validate(cls, target):
-		match = re.search(self.pattern, target)
+		match = re.search(cls.pattern, target)
 		match_groups = match.groupdict()
-		if match_groups['type'] in types:
+		if match_groups['type'] in cls.types:
 			return True
 		else:
 			return os.path.exists(target)
