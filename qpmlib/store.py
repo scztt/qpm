@@ -142,7 +142,7 @@ class QuarkStore:
 				return package
 		return None
 
-	def get_dependencies(self, package_name):
+	def get_dependencies(self, package_name, package_version):
 		package = self.get_package(package_name)
 		return package.get('dependencies', {})
 

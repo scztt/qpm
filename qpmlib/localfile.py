@@ -1,5 +1,5 @@
 import os.path, time, json
-import defaults
+import settings
 
 class LocalDataFile:
 	default_options = {
@@ -10,7 +10,7 @@ class LocalDataFile:
 	}
 
 	def __init__(self, path, options={}):
-		self.options = defaults.load_user_defaults('LocalDataFile', options, self.default_options)
+		self.options = settings.load_user_defaults('LocalDataFile', options, self.default_options)
 		self.path = path
 		self.data = None
 		self.last_loaded = -1

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import qpmlib
+import qpm
 import argparse, sys, os, os.path, importlib, json
 
 actions_list = ['init', 'config', 'install', 'archive', 'publish', 'develop', 'run', 'test', 'list']

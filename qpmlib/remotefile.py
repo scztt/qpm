@@ -1,5 +1,5 @@
 import os.path, time, json, tempfile, os
-import defaults
+import settings
 from localfile import LocalDataFile
 from .endpoints.url import UrlEndpoint
 
@@ -9,7 +9,7 @@ class RemoteDataFile:
 	}
 
 	def __init__(self, url, local_path, options={}):	
-		self.options = defaults.load_user_defaults('RemoteDataFile', options, self.default_options)
+		self.options = settings.load_user_defaults('RemoteDataFile', options, self.default_options)
 
 		self.url = url
 		if local_path:

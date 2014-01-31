@@ -1,7 +1,7 @@
 import qpm
 import os, os.path, json, collections, stat
 
-import defaults
+import settings
 
 quark_file_name = "quark.json"
 
@@ -21,7 +21,7 @@ class Quark:
 	}
 
 	def __init__(self, path, options={}):
-		self.options = defaults.load_user_defaults('Quark', options, self.default_options)
+		self.options = settings.load_user_defaults('Quark', options, self.default_options)
 
 		self.path = path
 		self.read_only = self.options['read_only']
@@ -61,6 +61,8 @@ class Quark:
 			self.sc_version = settings.get('sc_version')
 			self.ide = settings.get('ide')
 			self.dependencies = settings.get('dependencies', collections.OrderedDict())
+			self.author = settings.get('author')
+			self.email = settings.get('email')
 
 	def save(self):
 		with open(self.quarkfile_path, 'w') as f:
@@ -71,20 +73,22 @@ class Quark:
 			settings['sc_version'] = self.sc_version
 			settings['ide'] = self.ide
 			settings['dependencies'] = self.dependencies
+			settings['author'] = self.author
+			settings['email'] = self.email
 
 			f.write(json.dumps(settings, indent=2))
 
 	def add_dependency(self, name, version):
 		self.dependencies[name] = version
 
+	def get_dependencies(self):
+		return self.dependencies
+
 	def list_installed(self):
 		pass
 
 	def is_installed(self, package):
 		pass
-
-
-
 
 
 

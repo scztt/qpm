@@ -1,5 +1,5 @@
 import argparse
-import defaults, qpm, containers, collections
+import settings, qpm, containers, collections
 
 class GenericAction:
 	default_options = {}
@@ -17,13 +17,13 @@ class GenericAction:
 
 	@classmethod 
 	def get_default_options(cls):
-		return defaults.load_user_defaults([cls.name], {}, cls.default_options)
+		return settings.load_user_defaults([cls.name], {}, cls.default_options)
 
 	@classmethod
 	def fill_default_options(cls, options):
 		default_options = cls.get_default_options()
 		result_options = default_options.copy()
-		defaults.dict_add_recursive(options, result_options)
+		settings.dict_add_recursive(options, result_options)
 		return result_options
 
 	@classmethod
@@ -32,7 +32,7 @@ class GenericAction:
 		parsed = parser.parse_args(cmd_line);
 
 		#return cls.fill_default_options(parsed)
-		return parsed
+		return vars(parsed)
 
 	@classmethod
 	def get_arg_parser(cls):

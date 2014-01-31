@@ -1,10 +1,9 @@
-from .. import quark, containers, ide, defaults
-from ..generic_action import GenericAction
+	from ..generic_action import GenericAction
 from .fetch import FetchAction
 from ..store import QuarkStore
+from ..quark import Quark
 
 import argparse, sys, os, os.path
-from collections import OrderedDict
 from fetch import action as Fetch
 
 class InstallAction(GenericAction):
@@ -46,6 +45,7 @@ class InstallAction(GenericAction):
 
 	def do(self):
 		options = self.options
+		self.quark = Quark(options['quark_path'])
 
 		# With no target, just install all dependencies
 		if options['target'] == None:
@@ -72,7 +72,10 @@ class InstallAction(GenericAction):
 			print 'Failed to find / fetch package "%s"' % package_name
 
 	def do_install_all_deps(self):
-		pass
+		to_parse = set()
+		self_dependencies = self.quark.get_dependencies()
+		to_parse.add()
+
 
 	def do_fetch_dep(self):
 		options = self.options

@@ -32,9 +32,9 @@ class ListAction(GenericAction):
 		if self.options['global']:
 			result_list = self.list_global()
 		elif self.options['local']:
-			result_list =  self.list_local()
+			result_list = self.list_local()
 		elif self.options['remote']:
-			result_list =  self.list_remote()
+			result_list = self.list_remote()
 
 		for package, versions in result_list.iteritems():
 			self.msg('%s:\t\t[%s]' % (package, ', '.join(versions)))
