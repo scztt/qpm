@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import qpm
+import gevent.greenlet
 import argparse, sys, os, os.path, importlib, json
 
 actions_list = ['init', 'config', 'install', 'archive', 'publish', 'develop', 'run', 'test', 'list']
@@ -37,7 +37,9 @@ def exec_action(parameters):
 		options['interactive'] = False
 
 		action = TheAction(options)
-		action.do()
+		gl = gevent.Greenlet(action.do)
+		gl.start()
+		gl.join()
 
 		return action.get_result()
 
@@ -54,7 +56,9 @@ if __name__ == '__main__':
 		options['interactive'] = not(parameters.noninteractive)
 
 		action = TheAction(options)
-		action.do()
+		gl = gevent.Greenlet(action.do)
+		gl.start()
+		gl.join()
 		result = action.get_result()
 
 	if parameters.json:
