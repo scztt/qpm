@@ -37,6 +37,7 @@ class InstallAction(GenericAction):
         return parser
 
     def do_validate(self):
+        options = self.options
         deps_dir = os.path.join(options['quark_path'], options['dependencies_dir'])
         if not(os.path.exists(deps_dir)): os.mkdir(deps_dir)
         options['dependencies_dir'] = deps_dir
