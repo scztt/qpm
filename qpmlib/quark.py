@@ -1,5 +1,7 @@
-import qpm
-import os, os.path, json, collections, stat
+import os
+import os.path
+import json
+import collections
 
 import settings
 
