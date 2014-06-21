@@ -1,4 +1,5 @@
 import argparse
+from pydispatch import dispatcher
 import settings, qpm, containers, collections
 
 class GenericAction:
@@ -17,7 +18,9 @@ class GenericAction:
 
     @classmethod 
     def get_default_options(cls):
-        return settings.load_user_defaults([cls.name], {}, cls.default_options)
+        default_options = settings.load_user_defaults([cls.name], {}, cls.default_options)
+        dispatcher.send('qpm.action:default_options', default_options)
+        return default_options
 
     @classmethod
     def fill_default_options(cls, options):
@@ -29,6 +32,8 @@ class GenericAction:
     @classmethod
     def cmd_line_to_options(cls, cmd_line):
         parser = cls.get_arg_parser()
+        dispatcher.send('qpm.action:arg_parser', parser)
+
         parsed = parser.parse_args(cmd_line);
 
         #return cls.fill_default_options(parsed)
@@ -53,6 +58,9 @@ class GenericAction:
         self.result['success'] = False
         self.result['reason'] = None
         self.result['messages'] = list()
+
+        dispatcher.send('qpm:init_action', self)
+
 
     def msg(self, string, level='log'):
         m = self.Message(level, string)

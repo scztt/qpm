@@ -5,7 +5,6 @@ from . import endpoints
 
 import os, os.path, json, stat, time, collections, re, semantic_version
 
-
 store_location = os.path.expanduser('~/Library/Application Support/SuperCollider/qpm')
 
 base_repo_list = [
