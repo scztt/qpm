@@ -1,0 +1,12 @@
+{
+  "name": "repo-b", 
+  "version": "1.2.3", 
+  "sc_version": "3.6.5", 
+  "ide": {
+    "path": "/Applications/SuperCollider/SuperCollider.app", 
+    "name": "sc-ide"
+  }, 
+  "dependencies": {
+    "core": "3.6.5"
+  }
+}
