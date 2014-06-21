@@ -2,7 +2,6 @@ __author__ = 'fsc'
 from semantic_version import Spec, Version
 import logging
 import time
-from functools import partial
 logging.basicConfig()
 
 class FailedRequirement(Exception):
@@ -17,9 +16,6 @@ class State(object):
         self.possibilities = possibilities
         self.depth = depth
         self.name = self.current_requirement.name
-
-    def name(self):
-        return self.requirement['name']
 
 class Repository(object):
     def __init__(self, data):
@@ -60,7 +56,7 @@ class PackageVersion(object):
     def __repr__(self):
         return '%s-%s' % (self.name, self.version)
 
-class SimpleStrategy(object):
+class Strategy(object):
     def __init__(self):
         self.conservative = True
         self.avoid_prerelease = False
@@ -87,7 +83,7 @@ class SimpleStrategy(object):
         return version_list
 
 class PackageResolver(object):
-    def __init__(self, requirements, repo, strategy=SimpleStrategy()):
+    def __init__(self, requirements, repo, strategy=Strategy()):
         self.initial_requirements = requirements
         self.repo = repo
         self.strategy = strategy
@@ -126,10 +122,10 @@ class PackageResolver(object):
                     parent_state = self.find_state(parent)
                     if parent_state and parent_state.possibilities:
                         # parent of current requirement has other possibilities, so try this
-                        parent = self.handle_conflict(current_req)
+                        parent = self.find_conflict_parent(current_req)
                     else:
                         # try to handle by stepping back both the current requirement and the existing requirement
-                        parent = self.handle_conflict(current_req, existing.required_by[-1])
+                        parent = self.find_conflict_parent(current_req, existing.required_by[-1])
 
                     if parent:
                         self.resolve_conflict(parent)
@@ -139,9 +135,9 @@ class PackageResolver(object):
             else:
                 # We haven't yet selected a version for this package, so lets do it.
                 versions = self.repo.get_versions(current_req.name)
-                compatible_versions_spec = list(current_req.filter(versions))
+                compatible_versions = compatible_versions_spec = list(current_req.filter(versions))
 
-                compatible_versions = self.strategy.filter_versions(current_req, compatible_versions_spec)
+                compatible_versions = self.strategy.filter_versions(current_req, compatible_versions)
                 compatible_versions = self.strategy.sort_versions(current_req, compatible_versions)
 
                 if not(compatible_versions):
@@ -153,7 +149,7 @@ class PackageResolver(object):
                         raise Exception('Can\'t match a top level package. Try upgrading to a newer version.')
                     else:
                         self.errors[current_req.name] = [None, current_req]
-                        parent = self.handle_conflict(current_req, self.states)
+                        parent = self.find_conflict_parent(current_req, self.states)
                         self.resolve_conflict(parent)
                 else:
                     self.logger.info('Found %s versions for %s that match spec.' % (len(compatible_versions), current_req.name))
@@ -178,7 +174,7 @@ class PackageResolver(object):
             dep.depth = self.depth + 1
             self.requirements.append(dep)
 
-    def handle_conflict(self, current_req_initial, existing_req_initial=None):
+    def find_conflict_parent(self, current_req_initial, existing_req_initial=None):
         current_req = current_req_initial
         existing_req = existing_req_initial
 
@@ -239,14 +235,6 @@ class PackageResolver(object):
                 self.states.append(conflicting_state)
         else:
             raise FailedRequirement()
-
-    def rewind_to_conflicting_state(self, conflicting_requirement):
-        if conflicting_requirement:
-            while self.states:
-                state = self.states.pop()
-                if conflicting_requirement.name == state.name:
-                    return state
-        raise Exception('failed to rewind? bad.')
 
 if __name__ == '__main__':
     # some testing shit
@@ -312,7 +300,7 @@ if __name__ == '__main__':
         PackageRequirement('Jenine', '>=0.3')
     ]
 
-    strategy = SimpleStrategy()
+    strategy = Strategy()
     strategy.avoid_prerelease = False
     strategy.conservative = True
     pr = PackageResolver(base_reqs, Repository(package_deps), strategy)
