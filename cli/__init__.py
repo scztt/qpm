@@ -1,7 +1,9 @@
-import core
+from cement.core import handler, controller
+from core import *
+
 
 def run(args):
-	app = core.QPMApp(output_handler=core.QPMOutput)
+	app = QPMApp(output_handler=QPMOutput)
 	try:
 		app.setup()
 		app.run()
