@@ -3,9 +3,12 @@ import fcntl
 import os.path
 import subprocess
 import time
+import tempfile
+import yaml
 import re
 import json
 import re
+import appdirs
 
 SC_OUTPUT_PATTERN = "\x1B{10}(.*?)\x1B{10}"
 SC_LAUNCHED_STRING = r"Welcome to SuperCollider"
@@ -22,16 +25,47 @@ def find_sclang_executable(root):
 
 	return result
 
+def load_script(name):
+	script_path = os.path.join(os.path.split(__file__)[0], 'scscripts', name + '.scd')
+	with open(script_path, 'r') as f:
+		script = f.read()
+		return script
+
+def do_execute(sclang_path, code):
+	if not(sclang_path) or not(os.path.exists(sclang_path)):
+		raise Exception("No sclang binary found in path %s" % sclang_path)
+
+	#app.render({ "message": "Launching sclang at %s" % sclang_path })
+	proc = ScLangProcess(sclang_path)
+	if not(proc.launch()):
+		raise Exception("SuperCollider failed to launch.\nOutput: %s\nError: %s" % (proc.output, proc.error))
+
+	begin_token = re.escape("********EXECUTE********")
+	end_token = re.escape("********/EXECUTE********")
+
+	exec_string = '{ var result; result = {%s}.value(); "%s".postln; result.postln; "%s".postln; }.fork;' % (code, begin_token, end_token)
+	regex_string = '%s\n(.*)\n%s' % (begin_token, end_token)
+
+	proc.execute(exec_string)
+	output, error = proc.wait_for(regex_string)
+
+	return output.group(1), error
 
 def non_block_read(output):
 	fd = output.fileno()
 	fl = fcntl.fcntl(fd, fcntl.F_GETFL)
 	fcntl.fcntl(fd, fcntl.F_SETFL, fl | os.O_NONBLOCK)
 	try:
-		return output.readline()
+		return output.read()
 	except:
 		return ""
 
+# @TODO - This is not the best way to find the extensions folder, but it works for unit testing for now
+def user_extensions():
+	return os.path.join(appdirs.user_data_dir('SuperCollider'), 'Extensions')
+
+def system_extensions():
+	return os.path.join(appdirs.site_data_dir('SuperCollider'), 'Extensions')
 
 class ScLangProcess:
 	def __init__(self, path, headless=False):
@@ -45,6 +79,28 @@ class ScLangProcess:
 		self.buffer = ""
 		self.output = ""
 		self.error = ""
+		self.includes = set()
+		self.excludes = set()
+
+	def include(self, path):
+		self.includes.add(path)
+
+	def exclude(self, path):
+		self.excludes.add(path)
+
+	def exclude_extensions(self):
+		self.exclude(user_extensions())
+		self.exclude(system_extensions())
+
+	def create_sclang_conf(self):
+		conf = {
+			"includePaths": list(self.includes),
+			"excludePaths": list(self.excludes)
+		}
+		conf_string = yaml.dump(conf)
+		fd, self.sclang_conf_path = tempfile.mkstemp('.yaml', 'sclang_conf')
+		with open(self.sclang_conf_path, 'w') as f:
+			f.write(conf_string)
 
 	def launch(self):
 		if not(self.launched):
@@ -56,7 +112,11 @@ class ScLangProcess:
 				subprocess.Popen('sh -e /etc/init.d/xvfb start', shell=True, env=env)
 				subprocess.Popen("/sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -ac -screen 0 1280x1024x16", shell=True, env=env)
 
-			self.proc = subprocess.Popen([self.path, '-i' 'python'],
+			cmd = [self.path, '-i' 'python']
+			if self.includes or self.excludes:
+				self.create_sclang_conf()
+				cmd = cmd + ['-l', '%s' % self.sclang_conf_path]
+			self.proc = subprocess.Popen(cmd,
 				stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE,
 				env=env)
 
@@ -64,45 +124,53 @@ class ScLangProcess:
 			self.launched = True
 
 		if not(self.ready):
-			if self.wait_for(SC_LAUNCHED_STRING, 3 * 60) != False:
+			output, error = self.wait_for(SC_LAUNCHED_STRING, 3 * 60)
+			if not(error):
 				self.ready = True
 				return True
 			else:
+				self.error = error
 				return False
 
-	def wait_for(self, regex, timeout=30):
+	def wait_for(self, regex, timeout=30, print_stdout=False, kill_on_error=True):
 		output = ""
 		error = ""
 		start_time = time.time()
 		re_match = None
 
-		while not(re_match) and time.time() < (start_time + timeout):
-			output += non_block_read(self.proc.stdout)
+		while self.running() and not(re_match) and time.time() < (start_time + timeout):
+			read = non_block_read(self.proc.stdout)
+			if print_stdout and read: print read
+			output += read
 			error += non_block_read(self.proc.stderr)
-			re_match = re.search(regex, output)
+			re_match = re.search(regex, output, re.DOTALL)
 
-			if error:
+			if error and kill_on_error:
 				self.kill()
 				break
-			elif output:
-				pass
-				#print "\t\t" + output
 
-			time.sleep(0.1)
+			time.sleep(0.001)
 
 		self.output += output
 		self.error += error
 
 		if (error):
-			return False
+			return (None, error)
 		else:
-			return re_match
+			return (re_match, None)
+
+	def running(self):
+		if self.proc:
+			return (self.proc.returncode == None)
+		else:
+			return False
 
 	def kill(self):
 		if self.launched:
 			tries = 3
 			self.return_code = None
-			while tries or self.return_code == None:
+			while tries and self.return_code == None:
+				tries -= 1
 				self.proc.kill()
 				time.sleep(0.1)
 				self.return_code = self.proc.returncode
