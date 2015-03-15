@@ -1,15 +1,13 @@
 from cement.core import foundation, controller, output, handler
 import os.path
 import numbers
-import qpmlib.sclang_process as process
-import sclang
-from colorama import init, Fore, Back, Style
-init()
+import colorama
+colorama.init()
 
-class QPMTestBaseController(controller.CementBaseController):
+class QPMBaseController(controller.CementBaseController):
 	class Meta:
 		label = 'base'
-		description = 'manage supercollider unit and functional tests'
+		description = 'Do things with SuperCollider'
 
 		arguments = [
             (['-p', '--path'], dict(default=os.getcwd(), help='Path to supercollider installation or config.yaml')),
@@ -18,16 +16,19 @@ class QPMTestBaseController(controller.CementBaseController):
 class QPMApp(foundation.CementApp):
 	class Meta:
 		label = 'qpm'
-		base_controller = QPMTestBaseController
+		base_controller = QPMBaseController
 		output_handler = 'qpmoutput'
 		bootstrap = 'cli.bootstrap'
 
+
+# RENDERING
+# @TODO - Should be moved to plugin (for sc specific) / separate file
 def unescape(string):
 	return string.replace('\\n', '  ').replace('\\t', '\t')
 
-headingF = lambda s: (Style.BRIGHT + s + Style.RESET_ALL)
-passF = lambda s: (Fore.GREEN + s + Fore.RESET)
-failF = lambda s: (Fore.RED + s + Fore.RESET)
+headingF = lambda s: (colorama.Style.BRIGHT + s + colorama.Style.RESET_ALL)
+passF = lambda s: (colorama.Fore.GREEN + s + colorama.Fore.RESET)
+failF = lambda s: (colorama.Fore.RED + s + colorama.Fore.RESET)
 
 class QPMOutput(output.CementOutputHandler):
 	class Meta:

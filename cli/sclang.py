@@ -1,9 +1,5 @@
-from cement.core import foundation, controller, output, handler
+from cement.core import controller
 import os.path
-import time
-import core
-import re
-import json
 import qpmlib.sclang_process as process
 import qpmlib.sclang_testing as testing
 
@@ -22,9 +18,6 @@ class SCLang_AbstractBase(controller.CementBaseController):
             (['-p', '--path'], dict(default=os.getcwd(), help='Path to supercollider installation or config.yaml')),
 		]
 
-#	def _setup(self, base_app):
-#		super(SCLang_AbstractBase, self)._setup(base_app)
-
 	def _collect(self):
 		(arguments, commands) = super(SCLang_AbstractBase, self)._collect()
 		return (arguments + self._meta.base_arguments, commands)
@@ -32,7 +25,7 @@ class SCLang_AbstractBase(controller.CementBaseController):
 class SCLang_Execute(SCLang_AbstractBase):
 	class Meta:
 		label = 'execute'
-		description = 'execute a command in sclang'
+		description = 'Execute a command in sclang'
 		arguments = [
 			(['--timeout', '-t'], {
 				'help': 'Execution timeout.',
@@ -63,7 +56,7 @@ class SCLang_ListTests(SCLang_AbstractBase):
 		label = 'listtests'
 		description = 'List unit tests available in sclang.'
 
-	@controller.expose(help="Execute some code in sclang.")
+	@controller.expose(help="List unit tests available in sclang.")
 	def default(self):
 		sclang = process.find_sclang_executable(self.app.pargs.path)
 		try:
@@ -87,7 +80,7 @@ class SCLang_RunTest(SCLang_AbstractBase):
 			})
 		]
 
-	@controller.expose(help="Execute some code in sclang.")
+	@controller.expose(help="Run a unit test. Specify one or multiple using the form 'Class:test', or 'Class:*' for all tests.")
 	def default(self):
 		sclang = process.find_sclang_executable(self.app.pargs.path)
 
@@ -117,7 +110,6 @@ class SCLang_RunTest(SCLang_AbstractBase):
 
 			except Exception, e:
 				self.app.render({ "error": e })
-
 
 def generate_summary(test_plan, duration):
 	total = 0

@@ -5,7 +5,6 @@ import subprocess
 import time
 import tempfile
 import yaml
-import re
 import json
 import re
 import appdirs
@@ -43,21 +42,31 @@ def do_execute(sclang_path, code):
 	begin_token = re.escape("********EXECUTE********")
 	end_token = re.escape("********/EXECUTE********")
 
-	exec_string = '{ var result; result = {%s}.value(); "%s".postln; result.postln; "%s".postln; }.fork;' % (code, begin_token, end_token)
+	exec_string = '{ var result; result = {%s}.value(); "%s".postln; result.postln; "%s".postln; }.fork(AppClock);' % (code, begin_token, end_token)
 	regex_string = '%s\n(.*)\n%s' % (begin_token, end_token)
 
 	proc.execute(exec_string)
 	output, error = proc.wait_for(regex_string)
 
-	return output.group(1), error
+	if output:
+		return output.group(1), error
+	else:
+		print error
+		return "", error
 
-def non_block_read(output):
+def set_non_block(output):
+	fd = output.fileno()
+	fl = fcntl.fcntl(fd, fcntl.F_GETFL)
+	fcntl.fcntl(fd, fcntl.F_SETFL, fl | os.O_NONBLOCK)
+
+def safe_read(output):
 	fd = output.fileno()
 	fl = fcntl.fcntl(fd, fcntl.F_GETFL)
 	fcntl.fcntl(fd, fcntl.F_SETFL, fl | os.O_NONBLOCK)
 	try:
 		return output.read()
-	except:
+	except Exception, e:
+		time.sleep(0.2)
 		return ""
 
 # @TODO - This is not the best way to find the extensions folder, but it works for unit testing for now
@@ -67,8 +76,9 @@ def user_extensions():
 def system_extensions():
 	return os.path.join(appdirs.site_data_dir('SuperCollider'), 'Extensions')
 
+
 class ScLangProcess:
-	def __init__(self, path, headless=False):
+	def __init__(self, path, headless=True):
 		assert(os.path.exists(path))
 		self.path = path
 		self.launched = False
@@ -118,7 +128,7 @@ class ScLangProcess:
 				cmd = cmd + ['-l', '%s' % self.sclang_conf_path]
 			self.proc = subprocess.Popen(cmd,
 				stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE,
-				env=env)
+				env=env, close_fds=True)
 
 			self.start_time = time.time()
 			self.launched = True
@@ -138,18 +148,21 @@ class ScLangProcess:
 		start_time = time.time()
 		re_match = None
 
+		set_non_block(self.proc.stdin)
+		set_non_block(self.proc.stdout)
+
 		while self.running() and not(re_match) and time.time() < (start_time + timeout):
-			read = non_block_read(self.proc.stdout)
+			read = safe_read(self.proc.stdout)
 			if print_stdout and read: print read
 			output += read
-			error += non_block_read(self.proc.stderr)
+			error += safe_read(self.proc.stderr)
 			re_match = re.search(regex, output, re.DOTALL)
 
 			if error and kill_on_error:
 				self.kill()
 				break
 
-			time.sleep(0.001)
+			time.sleep(00.5)
 
 		self.output += output
 		self.error += error
