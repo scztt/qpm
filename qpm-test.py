@@ -2,5 +2,5 @@
 __author__ = 'fsc'
 
 if __name__ == '__main__':
-	import sys, cli
-	cli.run(sys.argv[1:])
+	import sys, qpmcli
+	qpmcli.run(sys.argv[1:])
