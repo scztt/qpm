@@ -90,7 +90,13 @@ class SCLang_RunTest(SCLang_AbstractBase):
 			}
 
 			for test_specifier in self.app.pargs.test:
-				test_suite, test_name = test_specifier.split(':')
+				specifiers = test_specifier.split(':')
+				test_suite = specifiers[0]\
+				if len(specifiers) > 1:
+					test_name = specifiers[1]
+				else:
+					test_name = "*"
+
 				test_plan['tests'].append({
 					'suite': test_suite, 'test': test_name
 				})
