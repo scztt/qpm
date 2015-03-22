@@ -16,6 +16,7 @@ class SCLang_AbstractBase(controller.CementBaseController):
 		stacked_type = 'nested'
 		base_arguments = [
             (['-p', '--path'], dict(default=os.getcwd(), help='Path to supercollider installation or config.yaml')),
+            (['-i', '--include'], dict(nargs='*', help='Path to include in ClassLib')),
 		]
 
 	def _collect(self):
@@ -91,7 +92,7 @@ class SCLang_RunTest(SCLang_AbstractBase):
 
 			for test_specifier in self.app.pargs.test:
 				specifiers = test_specifier.split(':')
-				test_suite = specifiers[0]\
+				test_suite = specifiers[0]
 				if len(specifiers) > 1:
 					test_name = specifiers[1]
 				else:
@@ -102,7 +103,7 @@ class SCLang_RunTest(SCLang_AbstractBase):
 				})
 
 			try:
-				test_run = testing.SCTestRun(sclang, test_plan)
+				test_run = testing.SCTestRun(sclang, test_plan, includes=self.app.pargs.include)
 				test_run.print_stdout = self.app.pargs.print_output
 				result = test_run.run()
 				summary = generate_summary(result, test_run.duration)
