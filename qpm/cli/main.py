@@ -2,25 +2,21 @@
 
 from cement.core import foundation, backend
 from cement.core.exc import FrameworkError, CaughtSignal
-from qpm.core import exc
+from qpm.core.app import *
+from qpm.core.exc import *
 
-class qpmApp(foundation.CementApp):
-    class Meta:
-        bootstrap = 'qpm.cli.bootstrap'
-        label = 'qpm'
-
-class qpmTestApp(qpmApp):
+class qpmTestApp(QPMApp):
     """A test app that is better suited for testing."""
     class Meta:
         argv = []
         config_files = []
         
 def main():
-    app = qpmApp()
+    app = QPMApp()
     try:
         app.setup()
         app.run()
-    except exc.qpmError as e:
+    except qpmError as e:
         print(e)
     except FrameworkError as e:
         print(e)

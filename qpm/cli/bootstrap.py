@@ -4,12 +4,10 @@ __author__ = 'fsc'
 # All built-in application controllers should be imported, and registered
 # in this file in the same way as qpmBaseController.
 
-from cement.core import handler
-from qpm.cli.controllers.base import qpmBaseController
-from core import *
+from qpm.core.app import *
 import sclang
 
-def load():
+def load(app):
     handler.register(QPMBaseController)
     handler.register(QPMOutput)
     handler.register(sclang.SCLang_Base)

@@ -1,7 +1,7 @@
 from cement.core import controller
 import os.path
-import qpmlib.sclang_process as process
-import qpmlib.sclang_testing as testing
+import qpm.sclang_process as process
+import qpm.sclang_testing as testing
 
 class SCLang_Base(controller.CementBaseController):
 	class Meta:

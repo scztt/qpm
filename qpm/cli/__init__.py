@@ -1,6 +1,4 @@
-from cement.core import handler, controller
-from core import *
-
+from qpm.core.app import *
 
 def run(args):
 	app = QPMApp(output_handler=QPMOutput)

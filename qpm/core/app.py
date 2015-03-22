@@ -18,7 +18,7 @@ class QPMApp(foundation.CementApp):
 		label = 'qpm'
 		base_controller = QPMBaseController
 		output_handler = 'qpmoutput'
-		bootstrap = 'qpmcli.bootstrap'
+		bootstrap = 'qpm.cli.bootstrap'
 
 
 # RENDERING
