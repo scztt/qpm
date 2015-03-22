@@ -18,7 +18,7 @@ def find_tests(sclang_path):
 		return obj
 
 class SCTestRun:
-	def __init__(self, sclang_path, test_plan, restarts=1, timeout=10*60):
+	def __init__(self, sclang_path, test_plan, includes=[], restarts=1, timeout=10*60):
 		self.tests = dict()
 		self.results = dict()
 		self.sclang_path = sclang_path
@@ -31,6 +31,7 @@ class SCTestRun:
 		self.started = False
 		self.duration = None
 		self.print_stdout = False
+		self.includes = includes
 		self.unit_test_quark_path = os.path.join(os.path.split(__file__)[0], 'scscripts', 'UnitTesting')
 
 		date = datetime.date.today()
@@ -91,6 +92,8 @@ class SCTestRun:
 				self.process = ScLangProcess(self.sclang_path)
 				self.process.exclude_extensions()
 				self.process.include(self.unit_test_quark_path)
+				for include in self.includes:
+					self.process.include(include)
 
 				self.process.launch()
 				self.process.execute(code)
