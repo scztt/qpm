@@ -21,16 +21,26 @@
 	try {
 		var tests, settings, toExpand;
 		test_record = test_record_string.parseYAML();
+
+		UnitTestScript.findTestClasses();
+
+		if (test_record["tests"].notEmpty and: { test_record["tests"][0]["suite"] == "*" }) {
+			test_record["tests"] = UnitTestScript.allTestClasses.keys.select({ |t| t != "...All..." }).asArray.collect({
+				|classSym|
+				Dictionary.newFrom(("suite": classSym.asClass.asString, "test": "*"))
+			});
+		};
+		test_record["tests"].postln;
 		test_record["tests"] = List.newFrom(test_record["tests"].collect(Dictionary.newFrom(_)));
+
 		tests = test_record["tests"];
 		settings = test_record["settings"];
 		~tests = tests;
 		"Tests: %\n".postf(tests);
 
-		UnitTest.findTestClasses();
-
 		// Expand *'s
-		toExpand = tests.select({ |t| (t["test"] == "*") && (t["completed"] != true) });
+		toExpand = tests.select({ |t| t.postln; t["test"].postln; (t["test"] == "*") && (t["completed"] != true) });
+		"Expanding %\n".postf(toExpand);
 		toExpand.do {
 			| wildcardTest |
 			var allTests, newTest, class;
@@ -133,6 +143,9 @@
 				~writeResult.(test_record, file);
 			}
 		}
+	} {
+		|err|
+		err.reportError;
 	}
 };
 
