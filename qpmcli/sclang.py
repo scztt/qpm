@@ -122,9 +122,15 @@ def generate_summary(test_plan, duration):
 	total = 0
 	failed = 0
 	for test in test_plan.get('tests', []):
+		if not(test.get('results')):
+			if not(test.get('error')):
+				test['results'] = [{'test': 'completed without error', 'pass': 'true'}]
+			else:
+				test['results'] = [{'test': 'completed without error', 'pass': 'false'}]
+
 		for subtest in test.get('results', []):
 			total += 1
-			if not(subtest.get('pass')):
+			if not(subtest.get('pass')) or subtest.get('pass') == 'false':
 				failed += 1
 
 	return {
