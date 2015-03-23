@@ -54,6 +54,7 @@ class SCLang_RunTest(SCLang_AbstractBase):
 		description = 'Run a test.'
 		arguments = [
 			(['-o', '--print-output'], {
+				'action': 'store_true',
 				'help': 'print output of unit tests'
 			}),
 			(['test'], {
@@ -85,7 +86,7 @@ class SCLang_RunTest(SCLang_AbstractBase):
 				})
 
 			try:
-				test_run = testing.SCTestRun(sclang, test_plan, includes=self.app.pargs.include)
+				test_run = testing.SCTestRun(self.app, sclang, test_plan, includes=self.app.pargs.include)
 				test_run.print_stdout = self.app.pargs.print_output
 				result = test_run.run()
 				summary = generate_summary(result, test_run.duration)

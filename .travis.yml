@@ -17,7 +17,7 @@ install:
 script:
  - qpm --help
  - ifmac qpm test.list --path ./SuperCollider/SuperCollider.app
- - ifmac qpm test.run "*:*" --path ./SuperCollider/SuperCollider.app
+ - ifmac qpm test.run "*:*" -o --path ./SuperCollider/SuperCollider.app
 
 notifications:
   on_success: change
