@@ -1,6 +1,9 @@
 
 from setuptools import setup, find_packages
+from pip.req import parse_requirements
 import sys, os
+
+install_reqs = parse_requirements("requirements.txt")
 
 setup(name='qpm',
     version='0.0.1',
@@ -17,14 +20,16 @@ setup(name='qpm',
     zip_safe=False,
     test_suite='nose.collector',
     install_requires=[
-        ### Required to build documentation
-        # "Sphinx >= 1.0",
-        ### Required for testing
-        # "nose",
-        # "coverage",
-        ### Required to function
+        'semantic-version',
+        'wsgiref',
+        'nose',
+        'gitpython',
+        'PyDispatcher',
         'cement',
-        ],
+        'colorama',
+        'appdirs',
+        'cement'
+    ],
     setup_requires=[],
     entry_points="""
         [console_scripts]
