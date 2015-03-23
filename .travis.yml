@@ -11,7 +11,7 @@ install:
  - ifmac () { if [[ $TRAVIS_OS_NAME == osx ]]; then eval $@; fi; }
  - iflin () { if [[ $TRAVIS_OS_NAME == linux ]]; then eval $@; fi; }
  - sudo pip install .
- - ifmac curl curl -L https://github.com/supercollider/supercollider/releases/download/Version-3.7.0-alpha0/SuperCollider-Mac.zip -O SuperCollider-Mac.zip
+ - ifmac curl -L https://github.com/supercollider/supercollider/releases/download/Version-3.7.0-alpha0/SuperCollider-Mac.zip -O SuperCollider-Mac.zip
  - ifmac unzip -d . SuperCollider-Mac.zip
 
 script:
