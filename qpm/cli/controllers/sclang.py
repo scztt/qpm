@@ -3,25 +3,7 @@ import os.path
 import qpm.sclang_process as process
 import qpm.sclang_testing as testing
 
-class SCLang_Base(controller.CementBaseController):
-	class Meta:
-		label = 'sc'
-		stacked_on = 'base'
-		stacked_type = 'nested'
-		description = 'do things with sclang'
-
-class SCLang_AbstractBase(controller.CementBaseController):
-	class Meta:
-		stacked_on = 'sc'
-		stacked_type = 'nested'
-		base_arguments = [
-            (['-p', '--path'], dict(default=os.getcwd(), help='Path to supercollider installation or config.yaml')),
-            (['-i', '--include'], dict(nargs='*', help='Path to include in ClassLib')),
-		]
-
-	def _collect(self):
-		(arguments, commands) = super(SCLang_AbstractBase, self)._collect()
-		return (arguments + self._meta.base_arguments, commands)
+from base import *
 
 class SCLang_Execute(SCLang_AbstractBase):
 	class Meta:
@@ -54,7 +36,7 @@ class SCLang_Execute(SCLang_AbstractBase):
 
 class SCLang_ListTests(SCLang_AbstractBase):
 	class Meta:
-		label = 'listtests'
+		label = 'test.list'
 		description = 'List unit tests available in sclang.'
 
 	@controller.expose(help="List unit tests available in sclang.")
@@ -68,7 +50,7 @@ class SCLang_ListTests(SCLang_AbstractBase):
 
 class SCLang_RunTest(SCLang_AbstractBase):
 	class Meta:
-		label = 'test'
+		label = 'test.run'
 		description = 'Run a test.'
 		arguments = [
 			(['-o', '--print-output'], {

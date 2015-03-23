@@ -5,7 +5,8 @@ __author__ = 'fsc'
 # in this file in the same way as qpmBaseController.
 
 from qpm.core.app import *
-import sclang
+from qpm.cli.controllers import sclang
+
 
 def load(app):
     handler.register(QPMBaseController)
