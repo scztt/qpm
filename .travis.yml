@@ -13,10 +13,12 @@ install:
  - iflin () { if [[ $TRAVIS_OS_NAME == linux ]]; then eval $@; fi; }
  - pip install .
  - ifmac curl curl -L https://github.com/supercollider/supercollider/releases/download/Version-3.7.0-alpha0/SuperCollider-Mac.zip -O SuperCollider-Mac.zip
- - ifmac
+ - ifmac unzip -d . SuperCollider-Mac.zip
 
 script:
  - qpm --help
+ - ifmac qpm test.list --path ./SuperCollider/SuperCollider.app
+ - ifmac qpm test.run *:* --path ./SuperCollider/SuperCollider.app
 
 notifications:
   on_success: change
