@@ -1,8 +1,7 @@
 language:
- - gcc
+ - python
 
 os:
- - linux
  - osx
 
 python:
