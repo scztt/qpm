@@ -220,7 +220,7 @@ UnitTest {
 		if(server.serverRunning.not) {
 			condition ?? { condition = Condition.new };
 			condition.test = false;
-			this.waitForBoot({
+			server.waitForBoot({
 				// Setting func to true indicates that our condition has become true and we can go when signaled.
 				booted = true;
 				condition.test = true;
