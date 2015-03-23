@@ -1,5 +1,6 @@
 """Qpm main application entry point."""
 
+import traceback
 from cement.core import foundation, backend
 from cement.core.exc import FrameworkError, CaughtSignal
 from qpm.core.app import *
@@ -17,10 +18,13 @@ def main():
         app.setup()
         app.run()
     except qpmError as e:
+        traceback.print_exc()
         print(e)
     except FrameworkError as e:
+        traceback.print_exc()
         print(e)
     except CaughtSignal as e:
+        traceback.print_exc()
         print(e)
     finally:
         app.close()

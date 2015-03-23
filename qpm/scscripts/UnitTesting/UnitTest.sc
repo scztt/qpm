@@ -215,9 +215,24 @@ UnitTest {
 	// if this is called inside a routine, the routine waits until server is booted
 
 	bootServer { | server |
+		var condition, booted = false;
 		server = server ? Server.default;
 		if(server.serverRunning.not) {
-			server.bootSync
+			condition ?? { condition = Condition.new };
+			condition.test = false;
+			this.waitForBoot({
+				// Setting func to true indicates that our condition has become true and we can go when signaled.
+				booted = true;
+				condition.test = true;
+				condition.signal;
+			}, 50, {
+				condition.test = true;
+				condition.signal;
+			});
+			condition.wait;
+			if (booted.not) {
+				Error("Server didn't boot").throw();
+			}
 		} {
 			server.freeAll;
 		};
