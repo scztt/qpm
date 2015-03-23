@@ -16,7 +16,7 @@ install:
  - ifmac unzip -d . SuperCollider-Mac.zip
 
 script:
- - jackd -d net
+ - jackd -d net &
  - qpm --help
  - ifmac qpm test.list --path ./SuperCollider/SuperCollider.app
  - ifmac qpm test.run "*:*" --path ./SuperCollider/SuperCollider.app
