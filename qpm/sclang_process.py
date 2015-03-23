@@ -78,9 +78,8 @@ def system_extensions():
 
 
 class ScLangProcess:
-	def __init__(self, app, path, headless=True):
+	def __init__(self, path, headless=True):
 		assert(os.path.exists(path))
-		self.app = app
 		self.path = path
 		self.launched = False
 		self.ready = False
@@ -114,7 +113,6 @@ class ScLangProcess:
 			f.write(conf_string)
 
 	def launch(self):
-		self.app.log.debug("ScLangProcess:launch")
 		if not(self.launched):
 			env = dict(os.environ)
 
@@ -128,7 +126,6 @@ class ScLangProcess:
 			if self.includes or self.excludes:
 				self.create_sclang_conf()
 				cmd = cmd + ['-l', '%s' % self.sclang_conf_path]
-			self.app.log.debug("Running sclang using command: %s" % (" ".join(cmd)))
 			self.proc = subprocess.Popen(cmd,
 				stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE,
 				env=env, close_fds=True)
@@ -146,7 +143,6 @@ class ScLangProcess:
 				return False
 
 	def wait_for(self, regex, timeout=30, print_stdout=False, kill_on_error=True):
-		self.app.log.debug("Waiting for process to finish....")
 		output = ""
 		error = ""
 		start_time = time.time()
@@ -157,10 +153,7 @@ class ScLangProcess:
 
 		while self.running() and not(re_match) and time.time() < (start_time + timeout):
 			read = safe_read(self.proc.stdout)
-			if print_stdout and read:
-				print read
-			else:
-				self.app.log.debug("sclang:\t|\tread")
+			if print_stdout and read: print read
 			output += read
 			error += safe_read(self.proc.stderr)
 			re_match = re.search(regex, output, re.DOTALL)
@@ -175,10 +168,8 @@ class ScLangProcess:
 		self.error += error
 
 		if (error):
-			self.app.log.error("sclang error: " + str(self.error))
 			return (None, error)
 		else:
-			self.app.log.debug("sclang finished: " + str(self.output))
 			return (re_match, None)
 
 	def running(self):

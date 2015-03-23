@@ -18,8 +18,7 @@ def find_tests(sclang_path):
 		return obj
 
 class SCTestRun:
-	def __init__(self, app, sclang_path, test_plan, includes=[], restarts=1, timeout=10*60):
-		self.app = app
+	def __init__(self, sclang_path, test_plan, includes=[], restarts=1, timeout=10*60):
 		self.tests = dict()
 		self.results = dict()
 		self.sclang_path = sclang_path
@@ -90,7 +89,7 @@ class SCTestRun:
 				code = process.load_script('test_runner')
 				code = ('~testRecord = "%s";\n' % self.test_plan_record) + code
 
-				self.process = ScLangProcess(self.app, self.sclang_path)
+				self.process = ScLangProcess(self.sclang_path)
 				self.process.exclude_extensions()
 				self.process.include(self.unit_test_quark_path)
 				for include in self.includes:
