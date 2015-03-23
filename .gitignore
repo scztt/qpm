@@ -3,3 +3,5 @@
 /lib/
 /include
 /.Python
+.idea
+_env
