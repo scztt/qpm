@@ -28,7 +28,8 @@ setup(name='qpm',
         'cement',
         'colorama',
         'appdirs',
-        'cement'
+        'cement',
+        'yaml'
     ],
     setup_requires=[],
     entry_points="""
