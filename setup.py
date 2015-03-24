@@ -30,7 +30,7 @@ setup(name='qpm',
         'appdirs',
         'cement',
         'pyyaml',
-        'requests'
+        'requests==2.5.3'
     ],
     setup_requires=[],
     entry_points="""
