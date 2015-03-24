@@ -88,8 +88,8 @@ class SCLang_RunTest(SCLang_AbstractBase):
 				summary = generate_summary(result, test_run.duration)
 
 				for test in result['tests']:
-					self.app.render({ 'test_result': test }, 'test_result')
-				self.app.render({ 'test_summary': summary }, 'test_summary')
+					self.app.render(test, 'test_result')
+				self.app.render(summary, 'test_summary')
 
 				if summary['failed_tests'] > 0:
 					self.app.close(1)
