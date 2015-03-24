@@ -16,7 +16,7 @@ install:
  - ifmac unzip -d . SuperCollider-Mac.zip
 
 script:
- - jackd -d net
+ - jackd -d net &
  - qpm --help
  - qpm quark checkout CommonTests MachineListeningUnitTests MathLibTests --location $HOME/Quarks
  - ifmac qpm test.list --path ./SuperCollider/SuperCollider.app
