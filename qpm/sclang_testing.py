@@ -89,7 +89,7 @@ class SCTestRun:
 				code = process.load_script('test_runner')
 				code = ('~testRecord = "%s";\n' % self.test_plan_record) + code
 
-				self.process = ScLangProcess(self.sclang_path)
+				self.process = ScLangProcess(self.sclang_path, print_output=self.print_stdout)
 				self.process.exclude_extensions()
 				self.process.include(self.unit_test_quark_path)
 				for include in self.includes:
@@ -97,7 +97,7 @@ class SCTestRun:
 
 				self.process.launch()
 				self.process.execute(code)
-				self.process.wait_for(re.escape("******** DONE ********"), timeout=self.timeout, print_stdout=self.print_stdout, kill_on_error=False)
+				self.process.wait_for(re.escape("******** DONE ********"), timeout=self.timeout, kill_on_error=False)
 
 				self.read_test_plan()
 

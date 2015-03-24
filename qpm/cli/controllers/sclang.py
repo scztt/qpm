@@ -95,7 +95,7 @@ class SCLang_RunTest(SCLang_AbstractBase):
 					self.app.close(1)
 
 			except Exception, e:
-				self.app.render("error", 'error')
+				self.app.render(e, 'error')
 
 def generate_summary(test_plan, duration):
 	total = 0
