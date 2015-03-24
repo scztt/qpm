@@ -19,7 +19,7 @@ script:
  - jackd -d net &
  - qpm --help
  - qpm quark checkout CommonTests MachineListeningUnitTests MathLibTests --location $HOME/Quarks
- - ifmac qpm test.list --path ./SuperCollider/SuperCollider.app
+ - ifmac qpm test.list -o --path ./SuperCollider/SuperCollider.app
  - ifmac qpm test.run "*:*" -o --path ./SuperCollider/SuperCollider.app --include $HOME/Quarks
 
 notifications:
