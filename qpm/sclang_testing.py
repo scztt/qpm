@@ -7,10 +7,10 @@ import re
 import sclang_process as process
 from sclang_process import ScLangProcess
 
-def find_tests(sclang_path):
+def find_tests(sclang_path, print_output=False):
 	code = process.load_script('list_tests')
 
-	output, error = process.do_execute(sclang_path, code)
+	output, error = process.do_execute(sclang_path, code, print_output)
 	if error:
 		raise Exception(error)
 	else:

@@ -4,7 +4,7 @@ from github_http import GitHubEndpoint
 endpoints = [GitHubEndpoint]
 
 def get_endpoint(name, url):
-	matches = filter(lambda endpoint: endpoint.url_matches(url), endpoints)
+	matches = filter(lambda endpoint: endpoint.url_match(url), endpoints)
 	if matches:
 		endpoint_class = matches[0]
 		return endpoint_class(name, url)
@@ -78,6 +78,6 @@ class Quark:
 		return self._url
 
 	def checkout(self, version, destination):
-		self._endpoint.install(version, destination)
+		return self._endpoint.checkout(version, destination)
 
 

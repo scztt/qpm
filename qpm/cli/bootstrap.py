@@ -6,6 +6,7 @@ __author__ = 'fsc'
 
 from qpm.core.app import *
 from qpm.cli.controllers import sclang
+from qpm.cli.controllers import quark
 
 
 def load(app):
@@ -15,6 +16,9 @@ def load(app):
     handler.register(sclang.SCLang_Execute)
     handler.register(sclang.SCLang_ListTests)
     handler.register(sclang.SCLang_RunTest)
-
+    handler.register(quark.Quark_Base)
+    handler.register(quark.Quark_List)
+    handler.register(quark.Quark_Versions)
+    handler.register(quark.Quark_Checkout)
 
 

@@ -26,12 +26,12 @@ class SCLang_Execute(SCLang_AbstractBase):
 		sclang = process.find_sclang_executable(self.app.pargs.path)
 		code = self.app.pargs.code[0]
 
-		output, error = process.do_execute(sclang, code)
+		output, error = process.do_execute(sclang, code, self.app.pargs.print_output)
 
 		if output:
 			self.app.render({ "result": output })
 		else:
-			self.app.render({ "error": error })
+			self.app.render(error, 'error')
 
 
 class SCLang_ListTests(SCLang_AbstractBase):
@@ -43,20 +43,16 @@ class SCLang_ListTests(SCLang_AbstractBase):
 	def default(self):
 		sclang = process.find_sclang_executable(self.app.pargs.path)
 		try:
-			result = testing.find_tests(sclang)
-			self.app.render({ "result": result })
+			result = testing.find_tests(sclang, self.app.pargs.print_output)
+			self.app.render(result, 'test_list')
 		except Exception, e:
-			self.app.render({ "error": e })
+			self.app.render(e, 'error')
 
 class SCLang_RunTest(SCLang_AbstractBase):
 	class Meta:
 		label = 'test.run'
 		description = 'Run a test.'
 		arguments = [
-			(['-o', '--print-output'], {
-				'action': 'store_true',
-				'help': 'print output of unit tests'
-			}),
 			(['test'], {
 				'help': 'test to run',
 				'action': 'store',
@@ -92,14 +88,14 @@ class SCLang_RunTest(SCLang_AbstractBase):
 				summary = generate_summary(result, test_run.duration)
 
 				for test in result['tests']:
-					self.app.render({ 'test_result': test })
-				self.app.render({ 'test_summary': summary })
+					self.app.render({ 'test_result': test }, 'test_result')
+				self.app.render({ 'test_summary': summary }, 'test_summary')
 
 				if summary['failed_tests'] > 0:
 					self.app.close(1)
 
 			except Exception, e:
-				self.app.render({ "error": e })
+				self.app.render("error", 'error')
 
 def generate_summary(test_plan, duration):
 	total = 0

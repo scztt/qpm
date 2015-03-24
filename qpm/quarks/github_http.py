@@ -67,8 +67,8 @@ class GitHubEndpoint:
 		return len(matches) > 0
 
 	def __init__(self, name, url):
+		self.url = url
 		self._name = name
-		self._url_def = url
 		self._versions = []
 		self._head_hash = None
 
@@ -103,7 +103,7 @@ class GitHubEndpoint:
 				self._head_hash = master[0]['commit']['sha']
 		return self._head_hash
 
-	def versions(self, numerical_only=True):
+	def update_versions(self):
 		if not(self._versions):
 			refs = github_request(self.tags_url())
 			versions = []
@@ -111,15 +111,19 @@ class GitHubEndpoint:
 				versions.append(ref)
 			self._versions = versions
 
-		if numerical_only:
-			return filter(lambda v: re.match(NUMERIC_VERSION, v['name']), self._versions)
-		else:
-			return self._versions
+		return self._versions
 
-	def checkout(self, version):
+	def versions(self, numerical_only=True):
+		versions =  map(lambda v: v['name'], self.update_versions())
+		if numerical_only:
+			return filter(lambda v: re.match(NUMERIC_VERSION, v), versions)
+		else:
+			return versions
+
+	def checkout(self, version, quark_store):
 		commit_hash = self.commit_hash_for_version(version)
 		version_name = commit_hash if (version == 'HEAD') else version
-		quark_destination = os.path.expanduser(os.path.join("~", "Desktop", "Quarks", self._name, version_name))
+		quark_destination = os.path.expanduser(os.path.join(quark_store, self._name, version_name))
 		zip_destination = os.path.expanduser(os.path.join(quark_destination, '_tmp', 'download.zip'))
 
 		size = github_download(self.zip_url(commit_hash), zip_destination)
@@ -143,7 +147,7 @@ class GitHubEndpoint:
 		if version == 'HEAD':
 			commit_hash = self.head_hash()
 		else:
-			versions = filter(lambda v: v.get('name') == version, self.versions())
+			versions = filter(lambda v: v.get('name') == version, self.update_versions())
 			if not(versions): raise Exception("Requested version '%s' doesn't exist!" % version)
 			version_info = versions[0]
 			commit = github_request(version_info['commit']['url'])
@@ -158,17 +162,3 @@ class GitHubEndpoint:
 		if quark_files:
 			quark_file = quark_files[0]
 			return github_request(quark_file['url'], json=False)
-
-
-q = QuarksDirectory()
-q.update_quark()
-print q.endpoints
-
-for (name, endpoint) in q.endpoints.iteritems():
-	print name
-	versions = endpoint.versions()
-	versions.append({ 'name': 'HEAD' })
-
-	for version in map(lambda v: v['name'], versions):
-		print "\t%s (%s)" % (version, endpoint.install(version))
-

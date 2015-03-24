@@ -1,6 +1,8 @@
-from cement.core import foundation, controller, output, handler
 import os.path
 import numbers
+
+from cement.core import foundation, controller, output, handler
+
 import colorama
 colorama.init()
 
@@ -29,19 +31,53 @@ def unescape(string):
 headingF = lambda s: (colorama.Style.BRIGHT + s + colorama.Style.RESET_ALL)
 passF = lambda s: (colorama.Fore.GREEN + s + colorama.Fore.RESET)
 failF = lambda s: (colorama.Fore.RED + s + colorama.Fore.RESET)
+ind = lambda n: ' ' * n
 
 class QPMOutput(output.CementOutputHandler):
 	class Meta:
 		label = 'qpmoutput'
 
 	def render(self, data, template):
-		for key, val in data.iteritems():
-			if key == 'test_result':
-				self.render_test_result(val)
-			elif key == 'test_summary':
-				self.render_test_summary(val)
-			else:
-				print "%s: %s" % (key, val)
+		template = 'default' if not(template) else template
+		render_method = getattr(self, 'render_' + template)
+		if render_method:
+			render_method(data)
+
+	def render_default(self, data):
+		print data
+
+	def render_error(self, error):
+		print failF("ERROR:\n" + str(error))
+
+	def render_quark_list(self, quarks):
+		print self.column_list(quarks, 4, 35)
+
+	def render_quark_checkout(self, quarks):
+		print '\nResult:'
+		for name, result in quarks.iteritems():
+			name = name.rjust(20)
+			print '  %s ===> %s' % (name, result)
+		print ''
+
+	def render_test_list(self, tests):
+		print self.column_list(tests, 2, 50)
+
+	def column_list(self, list, columns=4, width=35, indent=''):
+		groups = zip(*(iter(list),) * columns)
+		str = ""
+		for row in groups:
+			str += indent
+			for item in row:
+				spaces = max(width - len(item), 1)
+				str += item + (" " * spaces)
+			str += "\n"
+		return str
+
+	def render_quark_versions(self, list):
+
+		for name, versions in list.iteritems():
+			name = name.rjust(20)
+			print '%s:  %s' % (headingF(name), passF('  '.join(['HEAD'] + versions)))
 
 	def render_test_summary(self, summary):
 		summary_str = '\n   '

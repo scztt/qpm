@@ -30,12 +30,12 @@ def load_script(name):
 		script = f.read()
 		return script
 
-def do_execute(sclang_path, code):
+def do_execute(sclang_path, code, print_output=False):
 	if not(sclang_path) or not(os.path.exists(sclang_path)):
 		raise Exception("No sclang binary found in path %s" % sclang_path)
 
 	#app.render({ "message": "Launching sclang at %s" % sclang_path })
-	proc = ScLangProcess(sclang_path)
+	proc = ScLangProcess(sclang_path, print_output=print_output)
 	if not(proc.launch()):
 		raise Exception("SuperCollider failed to launch.\nOutput: %s\nError: %s" % (proc.output, proc.error))
 
@@ -78,8 +78,9 @@ def system_extensions():
 
 
 class ScLangProcess:
-	def __init__(self, path, headless=True):
+	def __init__(self, path, headless=True, print_output=False):
 		assert(os.path.exists(path))
+		self.print_output = print_output
 		self.path = path
 		self.launched = False
 		self.ready = False
@@ -142,7 +143,7 @@ class ScLangProcess:
 				self.error = error
 				return False
 
-	def wait_for(self, regex, timeout=30, print_stdout=False, kill_on_error=True):
+	def wait_for(self, regex, timeout=30, kill_on_error=True):
 		output = ""
 		error = ""
 		start_time = time.time()
@@ -153,7 +154,7 @@ class ScLangProcess:
 
 		while self.running() and not(re_match) and time.time() < (start_time + timeout):
 			read = safe_read(self.proc.stdout)
-			if print_stdout and read: print read
+			if self.print_output and read: print read
 			output += read
 			error += safe_read(self.proc.stderr)
 			re_match = re.search(regex, output, re.DOTALL)

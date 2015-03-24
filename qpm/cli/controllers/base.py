@@ -21,19 +21,12 @@ class SCLang_AbstractBase(CementBaseController):
         base_arguments = [
             (['-p', '--path'], dict(default=os.getcwd(), help='Path to supercollider installation or config.yaml')),
             (['-i', '--include'], dict(default=[], nargs='*', help='Path to include in ClassLib')),
+			(['-o', '--print-output'], {
+				'action': 'store_true',
+				'help': 'print output of sclang'
+			})
         ]
 
     def _collect(self):
         (arguments, commands) = super(SCLang_AbstractBase, self)._collect()
         return (arguments + self._meta.base_arguments, commands)
-
-
-class qpmBaseController(CementBaseController):
-    class Meta:
-        label = 'base'
-        arguments = [
-            (['-f', '--foo'], 
-             dict(help='the notorious foo option', dest='foo', action='store',
-                  metavar='TEXT') ),
-            ]
-
