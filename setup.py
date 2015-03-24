@@ -29,7 +29,8 @@ setup(name='qpm',
         'colorama',
         'appdirs',
         'cement',
-        'pyyaml'
+        'pyyaml',
+        'requests'
     ],
     setup_requires=[],
     entry_points="""
