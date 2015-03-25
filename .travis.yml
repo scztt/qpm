@@ -10,7 +10,7 @@ python:
 install:
  - ifmac () { if [[ $TRAVIS_OS_NAME == osx ]]; then eval $@; fi; }
  - iflin () { if [[ $TRAVIS_OS_NAME == linux ]]; then eval $@; fi; }
- - sudo pip install .
+ - sudo pip install . -q
  - ifmac curl -s -L https://github.com/supercollider/supercollider/releases/download/Version-3.7.0-alpha0/SuperCollider-Mac.zip -o SuperCollider-Mac.zip
  - ifmac unzip -qq -d . SuperCollider-Mac.zip
  - qpm quark checkout CommonTests MachineListeningUnitTests MathLibTests --location $HOME/Quarks
