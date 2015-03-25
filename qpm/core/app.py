@@ -120,4 +120,4 @@ class QPMOutput(output.CementOutputHandler):
 				else:
 					print template % passF('     (completed)')
 		else:
-			print template % failF('[!]  ') + test_result.get('error')
+			print template % failF('[!]  ') + test_result.get('error', 'Did not complete.')

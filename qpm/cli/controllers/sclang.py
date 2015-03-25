@@ -57,32 +57,45 @@ class SCLang_RunTest(SCLang_AbstractBase):
 				'help': 'test to run',
 				'action': 'store',
 				'nargs': '*'
-			})
-		]
+			}),
+            (['-l', '--location'], {
+				'help': 'Location of test plan file. If no tests are specified, the test plan will be resumed.',
+				'action': 'store',
+				'nargs': '?'
+            })
+        ]
 
 	@controller.expose(help="Run a unit test. Specify one or multiple using the form 'Class:test', or 'Class:*' for all tests.")
 	def default(self):
 		sclang = process.find_sclang_executable(self.app.pargs.path)
 
 		if sclang:
-			test_plan = {
-				'tests': []
-			}
+			test_plan = None
+			test_plan_path = None
 
-			for test_specifier in self.app.pargs.test:
-				specifiers = test_specifier.split(':')
-				test_suite = specifiers[0]
-				if len(specifiers) > 1:
-					test_name = specifiers[1]
-				else:
-					test_name = "*"
+			if self.app.pargs.test:
+				test_plan = {
+					'tests': []
+				}
 
-				test_plan['tests'].append({
-					'suite': test_suite, 'test': test_name
-				})
+				for test_specifier in self.app.pargs.test:
+					specifiers = test_specifier.split(':')
+					test_suite = specifiers[0]
+					if len(specifiers) > 1:
+						test_name = specifiers[1]
+					else:
+						test_name = "*"
+
+					test_plan['tests'].append({
+						'suite': test_suite, 'test': test_name
+					})
+
+			if self.app.pargs.location:
+				test_plan_path = self.app.pargs.location
+
+			test_run = testing.SCTestRun(sclang, test_plan=test_plan, test_plan_path=test_plan_path, includes=self.app.pargs.include)
 
 			try:
-				test_run = testing.SCTestRun(sclang, test_plan, includes=self.app.pargs.include)
 				test_run.print_stdout = self.app.pargs.print_output
 				result = test_run.run()
 				summary = generate_summary(result, test_run.duration)

@@ -18,11 +18,10 @@ def find_tests(sclang_path, print_output=False):
 		return obj
 
 class SCTestRun:
-	def __init__(self, sclang_path, test_plan, includes=[], restarts=1, timeout=10*60):
+	def __init__(self, sclang_path, test_plan=None, test_plan_path=None, includes=[], restarts=1, timeout=10*60):
 		self.tests = dict()
 		self.results = dict()
 		self.sclang_path = sclang_path
-		self.test_plan = test_plan
 
 		self.timeout = timeout
 		self.restarts = restarts
@@ -35,7 +34,17 @@ class SCTestRun:
 		self.unit_test_quark_path = os.path.join(os.path.split(__file__)[0], 'scscripts', 'UnitTesting')
 
 		date = datetime.date.today()
-		fd, self.test_plan_record = tempfile.mkstemp('.json', 'SCTestRun_record_' + "_".join([str(date.day), str(date.month), str(date.year)]))
+
+		if test_plan_path:
+			self.test_plan_path = test_plan_path
+		else:	
+			fd, self.test_plan_path = tempfile.mkstemp('.json', 'SCTestRun_record_' + "_".join([str(date.day), str(date.month), str(date.year)]))
+
+		if test_plan:
+			self.test_plan = test_plan
+			self.write_test_plan()
+		else:
+			self.read_test_plan()
 
 	def add_test(self, suite, test):
 		self.tests.setdefault(suite, list())
@@ -49,7 +58,7 @@ class SCTestRun:
 
 	def update_results(self):
 		results_string = ""
-		with open(self.test_plan_record, 'r') as f:
+		with open(self.test_plan_path, 'r') as f:
 			results_string = f.read()
 
 		if results_string:
@@ -65,11 +74,11 @@ class SCTestRun:
 
 	def write_test_plan(self):
 		test_plan_string = json.dumps(self.test_plan, indent=2)
-		with open(self.test_plan_record, "w") as f:
+		with open(self.test_plan_path, "w") as f:
 			f.write(test_plan_string)
 
 	def read_test_plan(self):
-		with open(self.test_plan_record, "r") as f:
+		with open(self.test_plan_path, "r") as f:
 			test_plan_string = f.read()
 			test_plan = json.loads(test_plan_string)
 			if test_plan.get('tests'):
@@ -87,7 +96,7 @@ class SCTestRun:
 				self.started = True
 				self.write_test_plan()
 				code = process.load_script('test_runner')
-				code = ('~testRecord = "%s";\n' % self.test_plan_record) + code
+				code = ('~testRecord = "%s";\n' % self.test_plan_path) + code
 
 				self.process = ScLangProcess(self.sclang_path, print_output=self.print_stdout)
 				self.process.exclude_extensions()
