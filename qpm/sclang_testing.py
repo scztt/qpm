@@ -18,7 +18,7 @@ def find_tests(sclang_path, print_output=False):
 		return obj
 
 class SCTestRun:
-	def __init__(self, sclang_path, test_plan=None, test_plan_path=None, includes=[], restarts=1, timeout=10*60):
+	def __init__(self, sclang_path, test_plan=None, test_plan_path=None, includes=[], restarts=5, timeout=10*60):
 		self.tests = dict()
 		self.results = dict()
 		self.sclang_path = sclang_path
