@@ -93,9 +93,8 @@ class SCLang_RunTest(SCLang_AbstractBase):
 			if self.app.pargs.location:
 				test_plan_path = self.app.pargs.location
 
-			test_run = testing.SCTestRun(sclang, test_plan=test_plan, test_plan_path=test_plan_path, includes=self.app.pargs.include)
-
 			try:
+				test_run = testing.SCTestRun(sclang, test_plan=test_plan, test_plan_path=test_plan_path, includes=self.app.pargs.include)
 				test_run.print_stdout = self.app.pargs.print_output
 				result = test_run.run()
 				summary = generate_summary(result, test_run.duration)
