@@ -13,10 +13,10 @@ install:
  - sudo pip install .
  - ifmac curl -L https://github.com/supercollider/supercollider/releases/download/Version-3.7.0-alpha0/SuperCollider-Mac.zip -o SuperCollider-Mac.zip
  - ifmac unzip -d . SuperCollider-Mac.zip
-
-script:
  - qpm quark checkout CommonTests MachineListeningUnitTests MathLibTests --location $HOME/Quarks
  - ifmac qpm test.list -o --path ./SuperCollider/SuperCollider.app
+
+script:
  - ifmac qpm test.run "*:*" -o --path ./SuperCollider/SuperCollider.app --include $HOME/Quarks
 
 notifications:
