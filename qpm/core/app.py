@@ -1,5 +1,6 @@
 import os.path
 import numbers
+import json
 
 from cement.core import foundation, controller, output, handler
 
@@ -50,7 +51,7 @@ class QPMOutput(output.CementOutputHandler):
 		print failF("ERROR:\n" + str(error))
 
 	def render_quark_list(self, quarks):
-		print self.column_list(quarks, 4, 35)
+		print self.column_list(quarks, 3, 30)
 
 	def render_quark_checkout(self, quarks):
 		print '\nResult:'
@@ -94,6 +95,22 @@ class QPMOutput(output.CementOutputHandler):
 			summary_str += failF("NO TESTS RUN")
 
 		print summary_str
+
+	def render_quark_info(self, summary):
+		for quark_name in summary:
+			print headingF(quark_name)
+			for version in sorted(summary[quark_name].keys()):
+				if version == 'HEAD' and summary[quark_name][version].get('version'):
+					print '    %s (v%s)' %(version, summary[quark_name][version]['version'])
+				else:
+					print '    ' + version
+
+				for key, val in summary[quark_name][version].iteritems():
+					if key == 'error':
+						print (' ' * 4) + (failF('(%s)' % val.decode('utf-8', 'ignore'))).ljust(6)
+					else:
+						if not isinstance(val, basestring): val = ", ".join(val)
+						print (' ' * 4) + ('%s: ' % key).rjust(15) + val
 
 	def render_test_result(self, test_result):
 		duration = test_result.get('duration', '-')

@@ -5,6 +5,7 @@ import re
 import os
 import zipfile
 import shutil
+import base64
 
 GITHUB_GIT_URL_REGEXP = r"git://github\.com/([^!]+?)/([^@/]*)"
 GITHUB_HTTP_URL_REGEXP = r"http.://github\.com/([^!]+?)/([^@/]*)"
@@ -61,7 +62,7 @@ class GitHubEndpoint:
 	def url_match(cls, url):
 		patterns = [
 			GITHUB_GIT_URL_REGEXP,
-			GITHUB_GIT_URL_REGEXP
+			GITHUB_HTTP_URL_REGEXP
 		];
 		matches = filter(lambda p: re.match(p, url), patterns)
 		return len(matches) > 0
@@ -137,7 +138,7 @@ class GitHubEndpoint:
 				shutil.move(quark_destination, quark_destination_tmp)
 				shutil.move(os.path.join(quark_destination_tmp, folders[0]), quark_destination)
 				shutil.rmtree(quark_destination_tmp)
-		else:
+		else:req.content
 			raise Exception('Problem with file download: $s (size %s)' % (zip_destination, size))
 
 		return quark_destination
@@ -162,3 +163,14 @@ class GitHubEndpoint:
 		if quark_files:
 			quark_file = quark_files[0]
 			return github_request(quark_file['url'], json=False)
+
+	def info(self, version):
+		commit_hash = self.commit_hash_for_version(version)
+		tree = github_request(self.tree_url(commit_hash))
+		quark_files = filter(lambda path: path['path'].lower().endswith('.quark'), tree['tree'])
+		if quark_files:
+			quark_file = quark_files[0]
+			blob = github_request(quark_file['url'], json=True)
+			content = blob['content']
+			info = base64.b64decode(content)
+			return info

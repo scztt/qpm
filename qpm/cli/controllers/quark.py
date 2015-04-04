@@ -1,7 +1,9 @@
 import os.path
+import itertools
 from multiprocessing.pool import ThreadPool
 
 import qpm.quarks
+import qpm.sclang_process as process
 
 from cement.core import controller
 from qpm.quarks import *
@@ -99,3 +101,66 @@ class Quark_Versions(CementBaseController):
             result[name] = directory.quark(name).versions()
 
         self.app.render(result, 'quark_versions')
+
+class Quark_Info(CementBaseController):
+    class Meta:
+        label = 'info'
+        stacked_on = 'quark'
+        stacked_type = 'nested'
+        description = 'Show info about a quark.'
+        arguments = [
+            (['-p', '--path'], dict(default=os.getcwd(), help='Path to supercollider installation or config.yaml')),
+            (['quarks'], {
+                'default': ['*'],
+				'action': 'store',
+				'nargs': '+'
+			})
+        ]
+    @controller.expose(help="Show info about a quark.", hide=True)
+    def default(self):
+        pool = ThreadPool(processes=4)
+        directory = QuarksDirectory()
+        sclang = process.find_sclang_executable(self.app.pargs.path)
+
+        quark_specs = self.app.pargs.quarks
+        if '*' in quark_specs:
+            quark_specs = directory.quarks()
+
+        def do_request_version(request):
+            quark_name = request[0]
+            version = request[1]
+            return (quark_name, version, directory.quark(quark_name).info(version))
+
+        def do_request_specs(quark_spec):
+            split_spec = quark_spec.split('@')
+            requests = list()
+            if len(split_spec) < 2:
+                split_spec.append('*')
+            if split_spec[1] == '*':
+                quark = directory.quark(split_spec[0])
+                versions = quark.versions()
+                versions.append('HEAD')
+                for version in versions:
+                    requests.append((split_spec[0], version))
+            else:
+                requests.append(split_spec)
+
+            return requests
+
+        requests = list(itertools.chain(*pool.map(do_request_specs, quark_specs)))
+        if len(requests) > 20:
+            print 'Requesting info on %s quark version - this may take some time...' % len(requests)
+
+        results_list = pool.map(do_request_version, requests)
+
+        results_dict = dict()
+        for result in results_list:
+            (name, version, content) = result
+            quark = results_dict.get(name, dict())
+            if content:
+                quark[version] = content.decode('utf-8', 'replace')
+            results_dict[name] = quark
+
+        results = process.convert_quark_infos(sclang, results_dict)
+
+        self.app.render(results, 'quark_info')

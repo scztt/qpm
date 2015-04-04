@@ -20,5 +20,6 @@ def load(app):
     handler.register(quark.Quark_List)
     handler.register(quark.Quark_Versions)
     handler.register(quark.Quark_Checkout)
+    handler.register(quark.Quark_Info)
 
 

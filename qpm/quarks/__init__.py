@@ -16,7 +16,7 @@ class QuarkEndpoint():
 		raise NotImplementedError()
 	def versions(self):
 		raise NotImplementedError()
-	def version_info(self, version='HEAD'):
+	def info(self, version='HEAD'):
 		raise NotImplementedError()
 	def update(self):
 		raise NotImplementedError()
@@ -58,7 +58,6 @@ class QuarksDirectory:
 			return quark
 
 
-
 class Quark:
 	def __init__(self, endpoint):
 		self._endpoint = endpoint
@@ -71,7 +70,7 @@ class Quark:
 		return self._endpoint.versions()
 
 	def dependencies(self, version):
-		version_info = self._endpoint.version_info(version)
+		version_info = self._endpoint.info(version)
 		return version_info['dependencies']
 
 	def url(self):
@@ -80,4 +79,6 @@ class Quark:
 	def checkout(self, version, destination):
 		return self._endpoint.checkout(version, destination)
 
-
+	def info(self, version):
+		info = self._endpoint.info(version)
+		return info
