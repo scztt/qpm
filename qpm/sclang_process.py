@@ -7,6 +7,8 @@ import tempfile
 import yaml
 import json
 import re
+import datetime
+
 import appdirs
 
 SC_OUTPUT_PATTERN = "\x1B{10}(.*?)\x1B{10}"
@@ -49,7 +51,7 @@ def do_execute(sclang_path, code, print_output=False):
 	output, error = proc.wait_for(regex_string)
 
 	if output:
-		return output.group(1), error
+			return output.group(1), error
 	else:
 		print error
 		return "", error
@@ -124,9 +126,8 @@ class ScLangProcess:
 				subprocess.Popen("/sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -ac -screen 0 1280x1024x16", shell=True, env=env)
 
 			cmd = [self.path, '-i' 'python']
-			if self.includes or self.excludes:
-				self.create_sclang_conf()
-				cmd = cmd + ['-l', '%s' % self.sclang_conf_path]
+			self.create_sclang_conf()
+			cmd = cmd + ['-l', '%s' % self.sclang_conf_path]
 			self.proc = subprocess.Popen(cmd,
 				stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE,
 				env=env, close_fds=True)
@@ -197,10 +198,6 @@ class ScLangProcess:
 
 
 
-
-
-
-
 def runFile(sclang_path, file_path, timeout=30):
 	os.path.abspath(os.path.expanduser(sclang_path))
 	os.path.abspath(os.path.expanduser(file_path))
@@ -224,3 +221,77 @@ def runFile(sclang_path, file_path, timeout=30):
 			results.append(e)
 	return results
 
+def convert_quark_infos(sclang_path, quark_infos):
+	infos_string = json.dumps(quark_infos)
+
+	date = datetime.date.today()
+	fd, infos_file = tempfile.mkstemp('.json', 'quark_infos' + "_".join([str(date.day), str(date.month), str(date.year)]))
+	with file(infos_file, 'w') as f: f.write(infos_string)
+
+	sc_script = r'''
+		~result = ();
+		~special_conversions = (
+			\isCompatible: {
+				| val |
+				if (val.isKindOf(Function)) {
+					var verString = ">=";
+					var verArray = [3, 0, 0];
+					var src = val.def.sourceCode;
+
+					var atMost, atLeast, foundVersion;
+					atLeast = src.findRegexp("Main.versionAtLeast\\(([\\s\\d]+),?([\\s\\d]+)?\\)");
+					atMost = src.findRegexp("Main.versionAtMost\\(([\\s\\d]+),?([\\s\\d]+)?\\)");
+					if (atLeast.size() > 1) {
+						foundVersion = atLeast;
+						verString = ">=";
+					};
+					if (atMost.size() > 1) {
+						foundVersion = atMost;
+						verString = "<=";
+					};
+
+					if (foundVersion.notNil) {
+						verArray[0] = foundVersion[1][1].asInteger;
+						if (foundVersion.size() > 2) {
+							verArray[1] = foundVersion[2][1].asInteger;
+						};
+					};
+					verString = verString ++ (verArray.join("."));
+				} {
+					val.asString();
+				}
+			}
+		);
+		~quark_infos = "%s".parseYAMLFile;
+		~quark_infos.postln;
+		~quark_infos.keysValuesDo {
+			|quark, infos|
+			~result[quark] = ();
+			infos.keysValuesDo {
+				|version, string|
+				try {
+					~result[quark][version] = string.interpret;
+					~result[quark][version].keysValuesDo {
+						|key, val|
+						if (~special_conversions[key].notNil) {
+							~result[quark][version][key] = ~special_conversions[key].value(val);
+						} {
+							~result[quark][version][key] = val.asString;
+						}
+					}
+				} {
+					|e|
+					~result[quark][version] = ("error": e.errorString );
+				}
+			}
+		};
+		JSON.stringify(~result);
+	''' % (infos_file)
+
+	result_string = do_execute(sclang_path, sc_script, True)[0]
+	print type(result_string)
+	result_string = result_string.decode('utf8')
+	print result_string
+	result = json.loads(result_string)
+
+	return result
