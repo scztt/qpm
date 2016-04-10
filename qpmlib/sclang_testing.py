@@ -7,20 +7,10 @@ import re
 import sclang_process as process
 from sclang_process import ScLangProcess
 
-def unit_test_quark_paths(include_gui=False):
-	includes = [
-		os.path.join(os.path.split(__file__)[0], 'scscripts', 'UnitTesting'),
-		os.path.join(os.path.split(__file__)[0], 'scscripts', 'CommonTests')
-	]
-	if include_gui:
-		includes.append(os.path.join(os.path.split(__file__)[0], 'scscripts', 'CommonTestsGUI'))
-
-	return includes
-
-def find_tests(sclang_path, classlib_path):
+def find_tests(sclang_path):
 	code = process.load_script('list_tests')
 
-	output, error = process.do_execute(sclang_path, code, includes=[classlib_path] + unit_test_quark_paths())
+	output, error = process.do_execute(sclang_path, code)
 	if error:
 		raise Exception(error)
 	else:
@@ -28,10 +18,9 @@ def find_tests(sclang_path, classlib_path):
 		return obj
 
 class SCTestRun:
-	def __init__(self, sclang_path, classlib_path, test_plan, restarts=1, timeout=10*60):
+	def __init__(self, sclang_path, test_plan, restarts=1, timeout=10*60):
 		self.tests = dict()
 		self.results = dict()
-		self.classlib_path = classlib_path
 		self.sclang_path = sclang_path
 		self.test_plan = test_plan
 
@@ -42,7 +31,7 @@ class SCTestRun:
 		self.started = False
 		self.duration = None
 		self.print_stdout = False
-		self.unit_test_quark_paths = unit_test_quark_paths()
+		self.unit_test_quark_path = os.path.join(os.path.split(__file__)[0], 'scscripts', 'UnitTesting')
 
 		date = datetime.date.today()
 		fd, self.test_plan_record = tempfile.mkstemp('.json', 'SCTestRun_record_' + "_".join([str(date.day), str(date.month), str(date.year)]))
@@ -101,10 +90,7 @@ class SCTestRun:
 
 				self.process = ScLangProcess(self.sclang_path)
 				self.process.exclude_extensions()
-
-				for path in self.unit_test_quark_paths:
-					self.process.include(path)
-				self.process.include(self.classlib_path)
+				self.process.include(self.unit_test_quark_path)
 
 				self.process.launch()
 				self.process.execute(code)

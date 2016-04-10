@@ -19,7 +19,7 @@
 	var test_record, test_record_string;
 	test_record_string = File(file, "r").readAllString();
 	try {
-		var tests, settings, toExpand, toExpandSuite;
+		var tests, settings, toExpand;
 		test_record = test_record_string.parseYAML();
 		test_record["tests"] = List.newFrom(test_record["tests"].collect(Dictionary.newFrom(_)));
 		tests = test_record["tests"];
@@ -29,29 +29,11 @@
 
 		UnitTest.findTestClasses();
 
-		toExpandSuite = tests.select({ |t| (t["suite"] == "*") && (t["completed"] != true) });
-		toExpandSuite.do {
-			| wildcardSuite |
-			var newTests = UnitTest.allTestClasses.keys.asArray.collect {
-				|class|
-				Dictionary.newFrom((
-					"suite": class,
-					"test": wildcardSuite["test"]
-				));
-			};
-			tests.addAll(newTests);
-			tests.remove(wildcardSuite);
-			~writeResult.(test_record, file);
-		};
-		tests.postln;
-
 		// Expand *'s
 		toExpand = tests.select({ |t| (t["test"] == "*") && (t["completed"] != true) });
-		toExpand.postln;
 		toExpand.do {
 			| wildcardTest |
 			var allTests, newTest, class;
-			wildcardTest["suite"].postln; wildcardTest["suite"].class.postln;
 			class = wildcardTest["suite"].asSymbol.asClass;
 			if (class.isNil) {
 				wildcardTest["error"] = "Class % not found".format(class);
@@ -151,11 +133,6 @@
 				~writeResult.(test_record, file);
 			}
 		}
-	} {
-		|err|
-		err.reportError;
-		~tests["error"] = err.errorString;
-		~writeResult.(test_record, file);
 	}
 };
 
