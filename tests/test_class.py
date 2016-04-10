@@ -1,9 +1,9 @@
 __author__ = 'fsc'
 
 import os.path, shutil
-import cli.core
+import qpmcli.core
 
-class QPMAppTest(cli.core.QPMApp):
+class QPMAppTest(qpmcli.core.QPMApp):
 	class Meta:
 		argv = []
 		config_files = []

@@ -1,14 +1,14 @@
 __author__ = 'fsc'
 
 from nose.tools import *
-import qpmlib.sclang_testing as testing
-from qpmlib.sclang_testing import SCTestRun
+import qpm.sclang_testing as testing
+from qpm.sclang_testing import SCTestRun
 
-sclang_path = "/Users/fsc/Documents/_code/SuperCollider-qt-compilation/build-qt5-current/INSTALL/SuperCollider/SuperCollider.app/Contents/MacOS/sclang"
+sclang_path = "/Users/fsc/Downloads/SuperCollider-5/SuperCollider.app/Contents/MacOS/sclang"
 
 def test_list_tests():
 	found = testing.find_tests(sclang_path)
-	eq_(len(found), 3)
+	eq_(len(found), 23)
 
 def test_run_tests():
 	test_plan = {
