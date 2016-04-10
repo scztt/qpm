@@ -30,12 +30,18 @@ def load_script(name):
 		script = f.read()
 		return script
 
-def do_execute(sclang_path, code):
+def do_execute(sclang_path, code, includes=[], excludes=[], print_stdout=False):
 	if not(sclang_path) or not(os.path.exists(sclang_path)):
 		raise Exception("No sclang binary found in path %s" % sclang_path)
 
 	#app.render({ "message": "Launching sclang at %s" % sclang_path })
 	proc = ScLangProcess(sclang_path)
+	
+	for i in includes:
+		proc.include(i)
+	for e in excludes:
+		proc.exclude(i)
+
 	if not(proc.launch()):
 		raise Exception("SuperCollider failed to launch.\nOutput: %s\nError: %s" % (proc.output, proc.error))
 
@@ -46,7 +52,7 @@ def do_execute(sclang_path, code):
 	regex_string = '%s\n(.*)\n%s' % (begin_token, end_token)
 
 	proc.execute(exec_string)
-	output, error = proc.wait_for(regex_string)
+	output, error = proc.wait_for(regex_string, print_stdout=False)
 
 	if output:
 		return output.group(1), error
@@ -125,7 +131,8 @@ class ScLangProcess:
 			cmd = [self.path, '-i' 'python']
 			if self.includes or self.excludes:
 				self.create_sclang_conf()
-				cmd = cmd + ['-l', '%s' % self.sclang_conf_path]
+				cmd = cmd + ['-a', '-l', '%s' % self.sclang_conf_path]
+			print " ".join(cmd)
 			self.proc = subprocess.Popen(cmd,
 				stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE,
 				env=env, close_fds=True)
