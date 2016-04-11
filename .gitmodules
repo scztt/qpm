@@ -1,6 +1,3 @@
-[submodule "qpm/scscripts/UnitTesting"]
-	path = qpm/scscripts/UnitTesting
-	url = https://github.com/supercollider-quarks/UnitTesting.git
 [submodule "qpm/scscripts/CommonTests"]
 	path = qpm/scscripts/CommonTests
 	url = https://github.com/supercollider-quarks/CommonTests.git
