@@ -67,7 +67,7 @@
     {
       "suite": "TestMixedBundleTester",
       "test": "test_findPreparationMessage",
-      "skip": true, s"skipReason": "No server support on travis"
+      "skip": true, "skipReason": "No server support on travis"
     },
     {
       "suite": "TestOSCBundle",
