@@ -4,7 +4,7 @@
 	result = switch(x,
 		\foo, { 1 },
 		\bar, { 2 },
-		\foo, { 3 },
+		\foo, { 1 },
 	);
 	test.assertEquals(result, 1);
 }
