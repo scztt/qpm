@@ -1,0 +1,52 @@
+{
+  "tests": [
+    {
+      "suite": "TestUnitTest",
+      "test": "*"
+    }, 
+    {
+      "suite": "TestEnv",
+      "test": "*"
+    }, 
+    {
+      "suite": "TestArray",
+      "test": "*"
+    }, 
+    {
+      "suite": "TestEvent",
+      "test": "*"
+    }, 
+    {
+      "suite": "TestOSCBundle",
+      "test": "*"
+    }, 
+    {
+      "suite": "TestNoOps",
+      "test": "*"
+    }, 
+    {
+      "suite": "TestMixedBundleTester",
+      "test": "*"
+    }, 
+    {
+      "suite": "TestFloat",
+      "test": "*"
+    }, 
+    {
+      "suite": "TestNetAddr",
+      "test": "*"
+    }, 
+    {
+      "suite": "TestCurveWarp",
+      "test": "*"
+    }, 
+    {
+      "suite": "UnitTestScript",
+      "test": "*"
+    }, 
+    {
+      "suite": "TestSignal",
+      "test": "*"
+    }
+  ]
+}
