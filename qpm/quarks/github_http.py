@@ -61,7 +61,7 @@ class GitHubEndpoint:
 	def url_match(cls, url):
 		patterns = [
 			GITHUB_GIT_URL_REGEXP,
-			GITHUB_GIT_URL_REGEXP
+			GITHUB_HTTP_URL_REGEXP
 		];
 		matches = filter(lambda p: re.match(p, url), patterns)
 		return len(matches) > 0
