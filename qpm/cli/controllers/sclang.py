@@ -94,7 +94,7 @@ class SCLang_RunTest(SCLang_AbstractBase):
 				test_plan_path = self.app.pargs.location
 
 			try:
-				test_run = testing.SCTestRun(sclang, test_plan=test_plan, test_plan_path=test_plan_path, includes=self.app.pargs.include)
+				test_run = testing.SCTestRun(sclang, test_plan=test_plan, test_plan_path=test_plan_path, includes=self.app.pargs.include, excludes=self.app.pargs.exclude)
 				test_run.print_stdout = self.app.pargs.print_output
 				result = test_run.run()
 				summary = generate_summary(result, test_run.duration)
@@ -112,12 +112,17 @@ class SCLang_RunTest(SCLang_AbstractBase):
 def generate_summary(test_plan, duration):
 	total = 0
 	failed = 0
+	skipped = 0
 	for test in test_plan.get('tests', []):
 		if not(test.get('results')):
-			if not(test.get('error')):
-				test['results'] = [{'test': 'completed without error', 'pass': 'true'}]
+			if test.get('skip'):
+				test['results'] = [{'test': 'skipped', 'pass': 'false'}]
+				skipped += 1
 			else:
-				test['results'] = [{'test': 'completed without error', 'pass': 'false'}]
+				if not(test.get('error')):
+					test['results'] = [{'test': 'completed without error', 'pass': 'true'}]
+				else:
+					test['results'] = [{'test': 'completed without error', 'pass': 'false'}]
 
 		for subtest in test.get('results', []):
 			total += 1
@@ -127,6 +132,7 @@ def generate_summary(test_plan, duration):
 	return {
 		'total_tests': total,
 		'failed_tests': failed,
+		'skipped_tests': skipped,
 		'duration': duration
 	}
 

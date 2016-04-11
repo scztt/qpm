@@ -7,10 +7,24 @@ import re
 import sclang_process as process
 from sclang_process import ScLangProcess
 
+def find_unit_test_quarks(include_gui=False):
+	root = os.path.split(__file__)[0]
+	paths = [
+		os.path.join(root, 'scscripts', 'UnitTesting'),
+		os.path.join(root, 'scscripts', 'CommonTests'),
+	]
+	if include_gui:
+		paths.append(os.path.join(root, 'scscripts', 'CommonTestsGUI'))
+
+	return paths
+
 def find_tests(sclang_path, print_output=False):
 	code = process.load_script('list_tests')
 
-	output, error = process.do_execute(sclang_path, code, print_output)
+	output, error = process.do_execute(sclang_path, code, 
+		includes=find_unit_test_quarks(),
+		print_output=print_output)
+
 	if error:
 		raise Exception(error)
 	else:
@@ -18,7 +32,7 @@ def find_tests(sclang_path, print_output=False):
 		return obj
 
 class SCTestRun:
-	def __init__(self, sclang_path, test_plan=None, test_plan_path=None, includes=[], restarts=5, timeout=10*60):
+	def __init__(self, sclang_path, test_plan=None, test_plan_path=None, excludes=[], includes=[], restarts=1, timeout=10*60):
 		self.tests = dict()
 		self.results = dict()
 		self.sclang_path = sclang_path
@@ -31,7 +45,7 @@ class SCTestRun:
 		self.duration = None
 		self.print_stdout = False
 		self.includes = includes
-		self.unit_test_quark_path = os.path.join(os.path.split(__file__)[0], 'scscripts', 'UnitTesting')
+		self.unit_test_quark_paths = find_unit_test_quarks()
 
 		date = datetime.date.today()
 
@@ -100,8 +114,8 @@ class SCTestRun:
 
 				self.process = ScLangProcess(self.sclang_path, print_output=self.print_stdout)
 				self.process.exclude_extensions()
-				self.process.include(self.unit_test_quark_path)
-				for include in self.includes:
+
+				for include in (self.includes + self.unit_test_quark_paths):
 					self.process.include(include)
 
 				self.process.launch()

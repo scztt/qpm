@@ -19,7 +19,7 @@
 	var test_record, test_record_string;
 	test_record_string = File(file, "r").readAllString();
 	try {
-		var tests, settings, toExpand;
+		var tests, settings, toExpand, toExclude;
 		test_record = test_record_string.parseYAML();
 
 		UnitTestScript.findTestClasses();
@@ -39,7 +39,7 @@
 		"Tests: %\n".postf(tests);
 
 		// Expand *'s
-		toExpand = tests.select({ |t| t.postln; t["test"].postln; (t["test"] == "*") && (t["completed"] != true) });
+		toExpand = tests.select({ |t| (t["test"] == "*") && (t["completed"] != true) });
 		"Expanding %\n".postf(toExpand);
 		toExpand.do {
 			| wildcardTest |
@@ -54,7 +54,9 @@
 					| test |
 					newTest = Dictionary.newFrom((
 						"suite": class.name.asString,
-						"test": test.name
+						"test": test.name,
+						"skip": wildcardTest["skip"],
+						"skipReason": wildcardTest["skipReason"],
 					));
 					tests.add(newTest);
 				};
@@ -63,6 +65,32 @@
 			}
 		};
 
+		// Ensure excluded tests are not run
+		toExclude = tests.select({
+			|t|
+			if (t["skip"].notNil) {
+				t["skip"] = (t["skip"].asString.toLower == "true")
+			};
+
+			t["skip"] == true
+		});
+		"Excluding: %".format(toExclude.join(", ")).postln;
+		tests.collect(_["test"]).postln;
+		tests = tests.reject({
+			|t|
+			(toExclude.detect({
+				|excluded|
+				(t["suite"] == excluded["suite"])
+				&& (t["test"] == excluded["test"])
+				&& (t !== excluded)
+			}).size > 0)
+		});
+		test_record["tests"] = tests;
+		~writeResult.(test_record, file);
+		"After exclude: ".post;
+		tests.do(_.postln);
+
+		// Okay, time to run the tests
 		tests.do {
 			| test |
 			var class, testname, script, result,
@@ -72,70 +100,76 @@
 
 			try {
 				if (test["completed"].isNil) {
-					test["completed"] = false;
-					~writeResult.(test_record, file);
-
-					class = test["suite"].asSymbol.asClass;
-					testname = test["test"].asSymbol;
-					if (class.isNil) {
-						test["error"] = "Class % not found".format(class);
+					if (test["skip"] == true) {
 						test["completed"] = true;
+						test["attemptsRemaining"] = nil;
 						~writeResult.(test_record, file);
 					} {
-						class.findTestMethods().postln;
+						test["completed"] = false;
+						~writeResult.(test_record, file);
 
-						script = class.findTestMethods().detect({ |m| m.name.postln == testname.postln });
-						if (script.notNil) {
-							// This is a bad way to get the results, but there's no other for now.
-							// One this is working end-to-end, then UnitTest can be improved incrementally.
-							oldPasses = IdentitySet.newFrom(class.passes);
-							oldFailures = IdentitySet.newFrom(class.failures);
-
-							// RUN THE TEST ///////////////
-							startTime = Date.localtime();
-
-							result = class.new.runTestMethod(script);
-							endTime = Date.localtime();
+						class = test["suite"].asSymbol.asClass;
+						testname = test["test"].asSymbol;
+						if (class.isNil) {
+							test["error"] = "Class % not found".format(class);
 							test["completed"] = true;
-							test["attemptsRemaining"] = nil;
-							test["duration"] = endTime.rawSeconds - startTime.rawSeconds;
-							~writeResult.(test_record, file);
-							///////////////////////////////
-
-							oldPasses.asArray.collect(_.identityHash).join(", ");
-							IdentitySet.newFrom(class.passes).asArray.collect(_.identityHash).join(", ");
-
-							oldFailures.asArray.collect(_.identityHash).join(", ");
-							IdentitySet.newFrom(class.failures).asArray.collect(_.identityHash).join(", ");
-
-							newPasses = IdentitySet.newFrom(class.passes).difference(oldPasses);
-							newFailures = IdentitySet.newFrom(class.failures).difference(oldFailures);
-							test["results"] = List();
-							newPasses.do {
-								|pass|
-								test["results"].add((
-									"test": "" ++ pass.message,
-									"pass": true,
-								))
-							};
-							newFailures.do {
-								|fail|
-								test["results"].add((
-									"pass": false,
-									"test": "" ++ fail.message.split($\n)[0],
-									"reason": fail.message.split($\n)[1..]
-								))
-							};
-
 							~writeResult.(test_record, file);
 						} {
-							test["error"] = "Test not found.";
-							test["completed"] = true;
-							~writeResult.(test_record, file);
+							class.findTestMethods().postln;
+
+							script = class.findTestMethods().detect({ |m| m.name.postln == testname.postln });
+							if (script.notNil) {
+								// This is a bad way to get the results, but there's no other for now.
+								// One this is working end-to-end, then UnitTest can be improved incrementally.
+								oldPasses = IdentitySet.newFrom(class.passes);
+								oldFailures = IdentitySet.newFrom(class.failures);
+
+								// RUN THE TEST ///////////////
+								startTime = Date.localtime();
+
+								result = class.new.runTestMethod(script);
+								endTime = Date.localtime();
+								test["completed"] = true;
+								test["attemptsRemaining"] = nil;
+								test["duration"] = endTime.rawSeconds - startTime.rawSeconds;
+								~writeResult.(test_record, file);
+								///////////////////////////////
+
+								oldPasses.asArray.collect(_.identityHash).join(", ");
+								IdentitySet.newFrom(class.passes).asArray.collect(_.identityHash).join(", ");
+
+								oldFailures.asArray.collect(_.identityHash).join(", ");
+								IdentitySet.newFrom(class.failures).asArray.collect(_.identityHash).join(", ");
+
+								newPasses = IdentitySet.newFrom(class.passes).difference(oldPasses);
+								newFailures = IdentitySet.newFrom(class.failures).difference(oldFailures);
+								test["results"] = List();
+								newPasses.do {
+									|pass|
+									test["results"].add((
+										"test": "" ++ pass.message,
+										"pass": true,
+									))
+								};
+								newFailures.do {
+									|fail|
+									test["results"].add((
+										"pass": false,
+										"test": "" ++ fail.message.split($\n)[0],
+										"reason": fail.message.split($\n)[1..]
+									))
+								};
+
+								~writeResult.(test_record, file);
+							} {
+								test["error"] = "Test not found.";
+								test["completed"] = true;
+								~writeResult.(test_record, file);
+							}
 						}
 					}
-
 				}
+
 			} {
 				|err|
 				err.reportError;

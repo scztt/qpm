@@ -12,6 +12,7 @@ import appdirs
 SC_OUTPUT_PATTERN = "\x1B{10}(.*?)\x1B{10}"
 SC_LAUNCHED_STRING = r"Welcome to SuperCollider"
 SCLANG_NAME = "sclang"
+CLASSLIB_NAME = "SCClassLibrary"
 
 def find_sclang_executable(root):
 	result = False
@@ -24,18 +25,31 @@ def find_sclang_executable(root):
 
 	return result
 
+def find_classlibrary(root):
+	result = False
+	if os.path.split(root)[1] == CLASSLIB_NAME:
+		result = root
+	else:
+		for dirpath, dirnames, filenames in os.walk(root):
+			if CLASSLIB_NAME in dirnames:
+				result = os.path.join(dirpath, CLASSLIB_NAME)
+
+	return result	
+
 def load_script(name):
 	script_path = os.path.join(os.path.split(__file__)[0], 'scscripts', name + '.scd')
 	with open(script_path, 'r') as f:
 		script = f.read()
 		return script
 
-def do_execute(sclang_path, code, print_output=False):
+def do_execute(sclang_path, code, includes=[], excludes=[], print_output=False):
 	if not(sclang_path) or not(os.path.exists(sclang_path)):
 		raise Exception("No sclang binary found in path %s" % sclang_path)
 
 	#app.render({ "message": "Launching sclang at %s" % sclang_path })
 	proc = ScLangProcess(sclang_path, print_output=print_output)
+	for i in includes: proc.include(i)
+	for e in excludes: proc.exclude(e)
 	if not(proc.launch()):
 		raise Exception("SuperCollider failed to launch.\nOutput: %s\nError: %s" % (proc.output, proc.error))
 
@@ -78,7 +92,7 @@ def system_extensions():
 
 
 class ScLangProcess:
-	def __init__(self, path, headless=True, print_output=False):
+	def __init__(self, path, classlib=None, headless=True, print_output=False):
 		assert(os.path.exists(path))
 		self.print_output = print_output
 		self.path = path
@@ -92,6 +106,11 @@ class ScLangProcess:
 		self.error = ""
 		self.includes = set()
 		self.excludes = set()
+		self.classlib = classlib if (classlib != None) else find_classlibrary(os.path.dirname(os.path.dirname(path)))
+		if not(self.classlib):
+			raise Error("Could not find classlib.")
+		else:
+			self.includes.add(self.classlib)
 
 	def include(self, path):
 		self.includes.add(path)
@@ -123,10 +142,15 @@ class ScLangProcess:
 				subprocess.Popen('sh -e /etc/init.d/xvfb start', shell=True, env=env)
 				subprocess.Popen("/sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -ac -screen 0 1280x1024x16", shell=True, env=env)
 
-			cmd = [self.path, '-i' 'python']
+			cmd = [self.path, '-i' 'python', '-a']
 			if self.includes or self.excludes:
 				self.create_sclang_conf()
 				cmd = cmd + ['-l', '%s' % self.sclang_conf_path]
+
+			if self.print_output:
+				#app.render({ "message": "Running: %s" % ' '.join(cmd) })
+				print "Running: %s" % ' '.join(cmd) 
+
 			self.proc = subprocess.Popen(cmd,
 				stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE,
 				env=env, close_fds=True)

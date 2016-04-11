@@ -31,6 +31,7 @@ def unescape(string):
 headingF = lambda s: (colorama.Style.BRIGHT + s + colorama.Style.RESET_ALL)
 passF = lambda s: (colorama.Fore.GREEN + s + colorama.Fore.RESET)
 failF = lambda s: (colorama.Fore.RED + s + colorama.Fore.RESET)
+skipF = lambda s: (colorama.Fore.YELLOW + s + colorama.Fore.RESET)
 ind = lambda n: ' ' * n
 
 class QPMOutput(output.CementOutputHandler):
@@ -42,6 +43,7 @@ class QPMOutput(output.CementOutputHandler):
 		render_method = getattr(self, 'render_' + template)
 		if render_method:
 			render_method(data)
+		return ""
 
 	def render_default(self, data):
 		print data
@@ -87,6 +89,8 @@ class QPMOutput(output.CementOutputHandler):
 				summary_str += passF(' %s TESTS PASSED' % summary['total_tests'])
 			else:
 				summary_str += failF(' %s TESTS FAILED' % summary['failed_tests'])
+				if summary['skipped_tests'] > 0:
+					summary_str += ', ' + skipF('%s skipped' % summary['skipped_tests'])
 				summary_str += (', out of %s' % summary['total_tests'])
 
 			summary_str += (' (total duration: {0:.1f}s)'.format(summary['duration']))
@@ -120,4 +124,7 @@ class QPMOutput(output.CementOutputHandler):
 				else:
 					print template % passF('     (completed)')
 		else:
-			print template % failF('[!]  ') + test_result.get('error', 'Did not complete.')
+			if test_result.get('skip'):
+				print template % skipF('[?]  ') + (' Skipped (reason: %s)' % test_result.get('skipReason')).rjust(12)
+			else:	
+				print template % failF('[!]  ') + test_result.get('error', 'Did not complete.')
