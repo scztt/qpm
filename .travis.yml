@@ -1,24 +1,23 @@
-language:
- - objective-c
+compiler:
+ - gcc
 
 os:
+ - linux
  - osx
 
 python:
  - "2.7"
 
 install:
- - ifmac () { if [[ $TRAVIS_OS_NAME == osx ]]; then eval $@; fi; }
- - iflin () { if [[ $TRAVIS_OS_NAME == linux ]]; then eval $@; fi; }
  - sudo pip install . -q
- - ifmac curl -s -L https://github.com/supercollider/supercollider/releases/download/Version-3.7.1/SuperCollider-OSX-3.7.1.zip -o SuperCollider-Mac.zip
- - ifmac unzip -qq -d . SuperCollider-Mac.zip
+ - curl -s -L https://github.com/supercollider/supercollider/releases/download/Version-3.7.1/SuperCollider-OSX-3.7.1.zip -o SuperCollider-Mac.zip
+ - unzip -qq -d . SuperCollider-Mac.zip
  - qpm quark checkout CommonTests --location $HOME/Quarks
- - ifmac qpm test.list -o --path ./SuperCollider/SuperCollider.app
+ - qpm test.list -o --path ./SuperCollider/SuperCollider.app
 
 script:
  - cp ./qpm/scscripts/travis_run_prototype.json ./travis_test_run.json
- - ifmac qpm test.run -l ./travis_test_run.json --path ./SuperCollider/SuperCollider.app --include $HOME/Quarks
+ - qpm test.run -l ./travis_test_run.json --path ./SuperCollider/SuperCollider.app --include $HOME/Quarks
 
 notifications:
   on_success: change
