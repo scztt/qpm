@@ -21,6 +21,7 @@ class SCLang_AbstractBase(CementBaseController):
         base_arguments = [
             (['-p', '--path'], dict(default=os.getcwd(), help='Path to supercollider installation or config.yaml')),
             (['-i', '--include'], dict(default=[], nargs='*', help='Path to include in ClassLib')),
+            (['-e', '--exclude'], dict(default=[], nargs='*', help='Path to exclude in ClassLib')),
 			(['-o', '--print-output'], {
 				'action': 'store_true',
 				'help': 'print output of sclang'
