@@ -18,7 +18,7 @@ install:
 
 script:
  - cp ./qpm/scscripts/travis_run_prototype.json ./travis_test_run.json
- - ifmac qpm test.run -l ./travis_test_run.json -o --path ./SuperCollider/SuperCollider.app --include $HOME/Quarks
+ - ifmac qpm test.run -l ./travis_test_run.json --path ./SuperCollider/SuperCollider.app --include $HOME/Quarks
 
 notifications:
   on_success: change
