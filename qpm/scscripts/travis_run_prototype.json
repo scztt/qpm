@@ -47,6 +47,32 @@
     {
       "suite": "TestSignal",
       "test": "*"
-    }
+    },
+
+    {
+      "suite": "TestUnitTest",
+      "test": "test_bootServer",
+      "skip": true, "skipReason": "No server support on travis"
+    },
+    {
+      "suite": "TestNetAddr",
+      "test": "test_sendBundle50",
+      "skip": true, "skipReason": "No server support on travis"
+    },
+    {
+      "suite": "TestMixedBundleTester",
+      "test": "test_send",
+      "skip": true, "skipReason": "No server support on travis"
+    },
+    {
+      "suite": "TestMixedBundleTester",
+      "test": "test_findPreparationMessage",
+      "skip": true, s"skipReason": "No server support on travis"
+    },
+    {
+      "suite": "TestOSCBundle",
+      "test": "test_prepare",
+      "skip": true, "skipReason": "No server support on travis"
+    },
   ]
 }
