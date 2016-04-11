@@ -1,78 +1,82 @@
 {
   "tests": [
     {
-      "suite": "TestUnitTest",
-      "test": "*"
+      "test": "*", 
+      "suite": "TestUnitTest"
     }, 
     {
-      "suite": "TestEnv",
-      "test": "*"
+      "test": "*", 
+      "suite": "TestEnv"
     }, 
     {
-      "suite": "TestArray",
-      "test": "*"
+      "test": "*", 
+      "suite": "TestArray"
     }, 
     {
-      "suite": "TestEvent",
-      "test": "*"
+      "test": "*", 
+      "suite": "TestEvent"
     }, 
     {
-      "suite": "TestOSCBundle",
-      "test": "*"
+      "test": "*", 
+      "suite": "TestOSCBundle"
     }, 
     {
-      "suite": "TestNoOps",
-      "test": "*"
+      "test": "*", 
+      "suite": "TestNoOps"
     }, 
     {
-      "suite": "TestMixedBundleTester",
-      "test": "*"
+      "test": "*", 
+      "suite": "TestMixedBundleTester"
     }, 
     {
-      "suite": "TestFloat",
-      "test": "*"
+      "test": "*", 
+      "suite": "TestFloat"
     }, 
     {
-      "suite": "TestNetAddr",
-      "test": "*"
+      "test": "*", 
+      "suite": "TestNetAddr"
     }, 
     {
-      "suite": "TestCurveWarp",
-      "test": "*"
+      "test": "*", 
+      "suite": "TestCurveWarp"
     }, 
     {
-      "suite": "UnitTestScript",
-      "test": "*"
+      "test": "*", 
+      "suite": "UnitTestScript"
     }, 
     {
-      "suite": "TestSignal",
-      "test": "*"
-    },
-
+      "test": "*", 
+      "suite": "TestSignal"
+    }, 
     {
-      "suite": "TestUnitTest",
-      "test": "test_bootServer",
-      "skip": true, "skipReason": "No server support on travis"
-    },
+      "test": "test_bootServer", 
+      "suite": "TestUnitTest", 
+      "skipReason": "No server support on travis", 
+      "skip": true
+    }, 
     {
-      "suite": "TestNetAddr",
-      "test": "test_sendBundle50",
-      "skip": true, "skipReason": "No server support on travis"
-    },
+      "test": "test_sendBundle50", 
+      "suite": "TestNetAddr", 
+      "skipReason": "No server support on travis", 
+      "skip": true
+    }, 
     {
-      "suite": "TestMixedBundleTester",
-      "test": "test_send",
-      "skip": true, "skipReason": "No server support on travis"
-    },
+      "test": "test_send", 
+      "suite": "TestMixedBundleTester", 
+      "skipReason": "No server support on travis", 
+      "skip": true
+    }, 
     {
-      "suite": "TestMixedBundleTester",
-      "test": "test_findPreparationMessage",
-      "skip": true, "skipReason": "No server support on travis"
-    },
+      "test": "test_findPreparationMessage", 
+      "suite": "TestMixedBundleTester", 
+      "skipReason": "No server support on travis", 
+      "skip": true
+    }, 
     {
-      "suite": "TestOSCBundle",
-      "test": "test_prepare",
-      "skip": true, "skipReason": "No server support on travis"
-    },
+      "test": "test_prepare", 
+      "suite": "TestOSCBundle", 
+      "skipReason": "No server support on travis", 
+      "skip": true
+    }
   ]
 }

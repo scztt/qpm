@@ -104,7 +104,7 @@ class SCLang_RunTest(SCLang_AbstractBase):
 				self.app.render(summary, 'test_summary')
 
 				if summary['failed_tests'] > 0:
-					self.app.close(1)
+					self.app.close(summary['failed_tests'])
 
 			except Exception, e:
 				self.app.render(e, 'error')
