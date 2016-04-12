@@ -80,8 +80,8 @@
 			|t|
 			(toExclude.detect({
 				|excluded|
-				(t["suite"] == excluded["suite"])
-				&& (t["test"] == excluded["test"])
+				(t["suite"].asString == excluded["suite"].asString)
+				&& (t["test"].asString == excluded["test"].asString)
 				&& (t !== excluded)
 			}).size > 0)
 		});
