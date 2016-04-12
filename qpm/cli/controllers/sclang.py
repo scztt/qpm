@@ -127,7 +127,8 @@ def generate_summary(test_plan, duration):
 		for subtest in test.get('results', []):
 			total += 1
 			if not(subtest.get('pass')) or subtest.get('pass') == 'false':
-				failed += 1
+				if not(test.get('skip')):
+					failed += 1
 
 	return {
 		'total_tests': total,
