@@ -21,6 +21,7 @@ class QPMApp(foundation.CementApp):
 		base_controller = QPMBaseController
 		output_handler = 'qpmoutput'
 		bootstrap = 'qpm.cli.bootstrap'
+		exit_on_close = True
 
 
 # RENDERING

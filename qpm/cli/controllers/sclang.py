@@ -106,7 +106,7 @@ class SCLang_RunTest(SCLang_AbstractBase):
 
 				if summary['failed_tests'] > 0:
 					#self.app.close(summary['failed_tests'])
-					self.app.close(1)
+					self.app.close(summary['failed_tests'])
 				else:
 					self.app.close(0)
 
