@@ -53,10 +53,16 @@
       "suite": "TestSignal"
     }, 
     {
-      "test": "test_bootServer", 
-      "suite": "TestUnitTest", 
-      "skipReason": "No server support on travis", 
-      "skip": true
+      "suite": "TestUnitTest", "test": "test_toreDown", 
+      "skip": true, "skipReason": "UnitTest bug"
+    }, 
+    {
+      "suite": "TestUnitTest", "test": "test_setUp2", 
+      "skip": true, "skipReason": "UnitTest bug"
+    }, 
+    {
+      "suite": "TestUnitTest", "test": "test_bootServer", 
+      "skip": true, "skipReason": "No server support on travis"
     }, 
     {
       "test": "test_sendBundle50", 
