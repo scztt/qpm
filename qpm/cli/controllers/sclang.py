@@ -117,7 +117,6 @@ def generate_summary(test_plan, duration):
 	for test in test_plan.get('tests', []):
 		if not(test.get('results')):
 			if test.get('skip'):
-				test['results'] = [{'test': 'skipped', 'pass': 'false'}]
 				skipped += 1
 			else:
 				if not(test.get('error')):
