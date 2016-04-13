@@ -16,8 +16,9 @@ install:
 
 script:
  - cp ./qpm/scscripts/travis_run_prototype.json ./travis_test_run.json
- - qpm test.run -l ./travis_test_run.json --path ./SuperCollider/SuperCollider.app --include $HOME/Quarks
- - echo Exit status $?
+ - qpm test.run -l ./travis_test_run.json --path ./SuperCollider/SuperCollider.app --include $HOME/Quarks; export TEST_STATUS=$?
+ - echo Exit status $TEST_STATUS
+ - exit $TEST_STATUS
 
 notifications:
   on_success: change
