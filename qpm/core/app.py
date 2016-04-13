@@ -93,20 +93,22 @@ class QPMOutput(output.CementOutputHandler):
 					summary_str += ', ' + skipF('%s skipped' % summary['skipped_tests'])
 				summary_str += (', out of %s' % summary['total_tests'])
 
-			summary_str += (' (total duration: {0:.1f}s)'.format(summary['duration']))
+			summary_str += (' (total duration: {0:.1f}s)'.format(int(summary.get('duration', 0))))
 		else:
 			summary_str += failF("NO TESTS RUN")
 
 		print summary_str
 
 	def render_test_result(self, test_result):
-		duration = test_result.get('duration', '-')
+		duration = int(test_result.get('duration', 0))
 		if isinstance(duration, numbers.Number): duration = "{0:.1f}".format(duration)
 
 		template = '%s '.rjust(7) + headingF('%s:%s (%ss)') % (test_result['suite'], test_result['test'], duration)
 		completed = (test_result.get('completed') == True)
 		if completed:
-			if test_result.get('results'):
+			if test_result.get('skip'):
+				print template % skipF('[-]  ') + (' Skipped (reason: %s)' % test_result.get('skipReason')).rjust(12)
+			elif test_result.get('results'):
 				total = len(test_result['results'])
 				passing = len(filter(lambda p: p.get('pass', False), test_result['results']))
 				format = passF if (total == passing) else failF
@@ -124,7 +126,4 @@ class QPMOutput(output.CementOutputHandler):
 				else:
 					print template % passF('     (completed)')
 		else:
-			if test_result.get('skip'):
-				print template % skipF('[?]  ') + (' Skipped (reason: %s)' % test_result.get('skipReason')).rjust(12)
-			else:	
-				print template % failF('[!]  ') + test_result.get('error', 'Did not complete.')
+			print template % failF('[!]  ') + test_result.get('error', 'Did not complete.')
