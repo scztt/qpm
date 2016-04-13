@@ -2,7 +2,6 @@ compiler:
  - gcc
 
 os:
- - linux
  - osx
 
 python:
@@ -18,6 +17,7 @@ install:
 script:
  - cp ./qpm/scscripts/travis_run_prototype.json ./travis_test_run.json
  - qpm test.run -l ./travis_test_run.json --path ./SuperCollider/SuperCollider.app --include $HOME/Quarks
+ - echo Exit status $?
 
 notifications:
   on_success: change
