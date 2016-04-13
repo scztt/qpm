@@ -12,7 +12,7 @@ install:
  - sudo pip install . -q
  - curl -s -L https://github.com/supercollider/supercollider/releases/download/Version-3.7.1/SuperCollider-OSX-3.7.1.zip -o SuperCollider-Mac.zip
  - unzip -qq -d . SuperCollider-Mac.zip
- - qpm quark checkout CommonTests --location $HOME/Quarks
+ - qpm quark checkout CommonTests CommonTestsGUI --location $HOME/Quarks
  - qpm test.list -o --path ./SuperCollider/SuperCollider.app
 
 script:
