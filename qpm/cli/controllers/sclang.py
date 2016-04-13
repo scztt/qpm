@@ -43,7 +43,8 @@ class SCLang_ListTests(SCLang_AbstractBase):
 	def default(self):
 		sclang = process.find_sclang_executable(self.app.pargs.path)
 		try:
-			result = testing.find_tests(sclang, self.app.pargs.print_output)
+			result = testing.find_tests(sclang, self.app.pargs.print_output,
+				self.app.pargs.include, self.app.pargs.exclude)
 			self.app.render(result, 'test_list')
 		except Exception, e:
 			self.app.render(e, 'error')

@@ -18,11 +18,12 @@ def find_unit_test_quarks(include_gui=False):
 
 	return paths
 
-def find_tests(sclang_path, print_output=False):
+def find_tests(sclang_path, print_output=False, includes=[], excludes=[]):
 	code = process.load_script('list_tests')
 
 	output, error = process.do_execute(sclang_path, code, 
-		includes=find_unit_test_quarks(),
+		includes=find_unit_test_quarks() + includes,
+		excludes=excludes,
 		print_output=print_output)
 
 	if error:
