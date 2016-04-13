@@ -13,12 +13,10 @@ install:
  - unzip -qq -d . SuperCollider-Mac.zip
  - qpm quark checkout CommonTests CommonTestsGUI --location $HOME/Quarks
  - qpm test.list -o --path ./SuperCollider/SuperCollider.app
+ - cp ./qpm/scscripts/travis_run_prototype.json ./travis_test_run.json
 
 script:
- - cp ./qpm/scscripts/travis_run_prototype.json ./travis_test_run.json
- - qpm test.run -l ./travis_test_run.json --path ./SuperCollider/SuperCollider.app --include $HOME/Quarks; export TEST_STATUS=$?
- - echo Exit status $TEST_STATUS
- - exit $TEST_STATUS
+ - qpm test.run -l ./travis_test_run.json --path ./SuperCollider/SuperCollider.app --include $HOME/Quarks
 
 notifications:
   on_success: change
