@@ -2,6 +2,10 @@
   "tests": [
     {
       "test": "*", 
+      "suite": "TestPlotter"
+    }, 
+    {
+      "test": "*", 
       "suite": "TestUnitTest"
     }, 
     {
