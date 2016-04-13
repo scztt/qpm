@@ -43,7 +43,7 @@ class SCTestRun:
 		self.run_started = None
 		self.process = None
 		self.started = False
-		self.duration = None
+		self.duration = -1
 		self.print_stdout = False
 		self.includes = includes
 		self.unit_test_quark_paths = find_unit_test_quarks()
@@ -102,8 +102,8 @@ class SCTestRun:
 				raise Exception('Test plan has no tests!')
 
 	def run(self):
+		start_time = time.time()
 		if not(self.started) and not(self.all_tests_completed()):
-			start_time = time.time()
 
 			attempt = 0
 			while not(self.all_tests_completed()) and self.restarts > 0:
@@ -127,8 +127,9 @@ class SCTestRun:
 
 			self.started = False
 
-			end_time = time.time()
-			self.duration = end_time - start_time
+		end_time = time.time()
+		self.duration = end_time - start_time
+
 		return self.test_plan
 
 	def all_tests_completed(self):
