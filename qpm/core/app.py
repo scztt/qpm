@@ -99,6 +99,9 @@ class QPMOutput(output.CementOutputHandler):
 			summary_str += failF("NO TESTS RUN")
 
 		print summary_str
+		if summary['failed_tests'] > 0:
+			print 'Search for "?" to find failed tests.'
+
 
 	def render_test_result(self, test_result):
 		duration = int(test_result.get('duration', 0))
