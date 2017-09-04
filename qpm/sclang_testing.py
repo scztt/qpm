@@ -22,7 +22,7 @@ def find_unit_test_quarks(include_gui=False):
 	if include_gui and os.path.exists(gui_path):
 		paths.append(gui_path)
 
-  return paths
+	return paths
 
 def find_tests(sclang_path, print_output=False, includes=[], excludes=[]):
 	code = process.load_script('list_tests')
