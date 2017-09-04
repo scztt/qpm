@@ -22,12 +22,12 @@
 		var tests, settings, toExpand, toExclude;
 		test_record = test_record_string.parseYAML();
 
-		UnitTestScript.findTestClasses();
+		UnitTest.findTestClasses();
 
 		if (test_record["tests"].notEmpty and: { test_record["tests"][0]["suite"] == "*" }) {
-			test_record["tests"] = UnitTestScript.allTestClasses.keys.select({ |t| t != "...All..." }).asArray.collect({
+			test_record["tests"] = UnitTest.allTestClasses.keys.select({ |t| t != "...All..." }).asArray.collect({
 				|classSym|
-				Dictionary.newFrom(("suite": classSym.asClass.asString, "test": "*"))
+				Dictionary.newFrom(("suite": classSym.asSymbol.asClass.asString, "test": "*"))
 			});
 		};
 		test_record["tests"].postln;
@@ -36,7 +36,6 @@
 		tests = test_record["tests"];
 		settings = test_record["settings"];
 		~tests = tests;
-		"Tests: %\n".postf(tests);
 
 		// Expand *'s
 		toExpand = tests.select({ |t| (t["test"] == "*") && (t["completed"] != true) });
@@ -50,7 +49,10 @@
 				wildcardTest["completed"] = true;
 				~writeResult.(test_record, file);
 			} {
-				class.findTestMethods().postln.do {
+				if (class.respondsTo(\findTestMethods).not) {
+					class = ("Test" ++ class.name.asString).asSymbol.asClass;
+				};
+				class.tryPerform(\findTestMethods).postln.do {
 					| test |
 					newTest = Dictionary.newFrom((
 						"suite": class.name.asString,
@@ -64,6 +66,8 @@
 				~writeResult.(test_record, file);
 			}
 		};
+
+		"Tests: %\n".postf(tests);
 
 		// Ensure excluded tests are not run
 		toExclude = tests.select({
@@ -182,6 +186,7 @@
 		err.reportError;
 	}
 };
+
 
 {
 	~testrun.(~testRecord);
