@@ -9,14 +9,20 @@ from sclang_process import ScLangProcess
 
 def find_unit_test_quarks(include_gui=False):
 	root = os.path.split(__file__)[0]
-	paths = [
-		os.path.join(root, 'scscripts', 'UnitTesting'),
-		os.path.join(root, 'scscripts', 'CommonTests'),
-	]
-	if include_gui:
-		paths.append(os.path.join(root, 'scscripts', 'CommonTestsGUI'))
+	paths = []
 
-	return paths
+	unit_path = os.path.join(root, 'scscripts', 'UnitTesting')
+	common_path = os.path.join(root, 'scscripts', 'CommonTests')
+	gui_path = os.path.join(root, 'scscripts', 'CommonTestsGUI')
+
+	if os.path.exists(unit_path):
+		paths.append(unit_path)
+	if os.path.exists(common_path):
+		paths.append(common_path)
+	if include_gui and os.path.exists(gui_path):
+		paths.append(gui_path)
+
+  return paths
 
 def find_tests(sclang_path, print_output=False, includes=[], excludes=[]):
 	code = process.load_script('list_tests')
