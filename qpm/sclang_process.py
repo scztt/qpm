@@ -108,7 +108,7 @@ class ScLangProcess:
 		self.excludes = set()
 		self.classlib = classlib if (classlib != None) else find_classlibrary(os.path.dirname(os.path.dirname(path)))
 		if not(self.classlib):
-			raise Error("Could not find classlib.")
+			raise Exception("Could not find classlib.")
 		else:
 			self.includes.add(self.classlib)
 
