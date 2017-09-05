@@ -100,7 +100,7 @@ class QPMOutput(output.CementOutputHandler):
 
 		print summary_str
 		if summary['failed_tests'] > 0:
-			print 'Search for "?" to find failed tests.'
+			print 'Search for [?] or [!] to find failed tests.'
 
 
 	def render_test_result(self, test_result):
@@ -115,8 +115,14 @@ class QPMOutput(output.CementOutputHandler):
 			elif test_result.get('results'):
 				total = len(test_result['results'])
 				passing = len(filter(lambda p: p.get('pass', False), test_result['results']))
-				format = passF if (total == passing) else failF
+
+				format = passF if (total == passing and not test_result.get('error')) else failF
 				print template % format('[%d/%d]' % (passing, total))
+
+				if test_result.get('error'):
+					total += 1
+					print failF('!'.rjust(12)) + ' %s' % ('Encountered error: %s' % test_result.get('error')).strip()
+
 				for subtest in test_result.get('results', []):
 					if subtest.get('pass', False):
 						print passF('*'.rjust(12)) + ' %s' % unescape(subtest.get('test')).strip()

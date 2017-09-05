@@ -19,18 +19,29 @@
 	var test_record, test_record_string;
 	test_record_string = File(file, "r").readAllString();
 	try {
-		var tests, settings, toExpand, toExclude;
+		var tests, skipped, settings, toExpand, toExclude, starStarTests;
 		test_record = test_record_string.parseYAML();
 
 		UnitTest.findTestClasses();
 
-		if (test_record["tests"].notEmpty and: { test_record["tests"][0]["suite"] == "*" }) {
-			test_record["tests"] = UnitTest.allTestClasses.keys.select({ |t| t != "...All..." }).asArray.collect({
+		if (test_record["tests"].isEmpty) {
+			"No tests defined".throw;
+		};
+
+		starStarTests = test_record["tests"].select({
+			|item|
+			item["suite"] == "*"
+		});
+		test_record["tests"].removeAll(starStarTests);
+
+		if (starStarTests.notEmpty) {
+			var all = UnitTest.allTestClasses.keys.select({ |t| t != "...All..." }).asArray.collect({
 				|classSym|
 				Dictionary.newFrom(("suite": classSym.asSymbol.asClass.asString, "test": "*"))
 			});
+			test_record["tests"] = all ++ test_record["tests"]
 		};
-		test_record["tests"].postln;
+
 		test_record["tests"] = List.newFrom(test_record["tests"].collect(Dictionary.newFrom(_)));
 
 		tests = test_record["tests"];
@@ -43,16 +54,19 @@
 		toExpand.do {
 			| wildcardTest |
 			var allTests, newTest, class;
+
 			class = wildcardTest["suite"].asSymbol.asClass;
+
+			if (class.respondsTo(\findTestMethods).not && class.notNil) {
+				class = ("Test" ++ class.name.asString).asSymbol.asClass;
+			};
+
 			if (class.isNil) {
 				wildcardTest["error"] = "Class % not found".format(class);
 				wildcardTest["completed"] = true;
 				~writeResult.(test_record, file);
 			} {
-				if (class.respondsTo(\findTestMethods).not) {
-					class = ("Test" ++ class.name.asString).asSymbol.asClass;
-				};
-				class.tryPerform(\findTestMethods).postln.do {
+				class.tryPerform(\findTestMethods).do {
 					| test |
 					newTest = Dictionary.newFrom((
 						"suite": class.name.asString,
@@ -60,14 +74,13 @@
 						"skip": wildcardTest["skip"],
 						"skipReason": wildcardTest["skipReason"],
 					));
+
 					tests.add(newTest);
 				};
 				tests.remove(wildcardTest);
 				~writeResult.(test_record, file);
 			}
 		};
-
-		"Tests: %\n".postf(tests);
 
 		// Ensure excluded tests are not run
 		toExclude = tests.select({
@@ -78,8 +91,8 @@
 
 			t["skip"] == true
 		});
+
 		"Excluding: %".format(toExclude.join(", ")).postln;
-		tests.collect(_["test"]).postln;
 		tests = tests.reject({
 			|t|
 			(toExclude.detect({
@@ -110,8 +123,6 @@
 						~writeResult.(test_record, file);
 					} {
 						test["completed"] = false;
-						~writeResult.(test_record, file);
-
 						class = test["suite"].asSymbol.asClass;
 						testname = test["test"].asSymbol;
 						if (class.isNil) {
@@ -119,9 +130,9 @@
 							test["completed"] = true;
 							~writeResult.(test_record, file);
 						} {
-							class.findTestMethods().postln;
+							class.findTestMethods();
 
-							script = class.findTestMethods().detect({ |m| m.name.postln == testname.postln });
+							script = class.findTestMethods().detect({ |m| m.name == testname });
 							if (script.notNil) {
 								// This is a bad way to get the results, but there's no other for now.
 								// One this is working end-to-end, then UnitTest can be improved incrementally.
@@ -129,6 +140,7 @@
 								oldFailures = IdentitySet.newFrom(class.failures);
 
 								// RUN THE TEST ///////////////
+								~writeResult.(test_record, file);
 								startTime = Date.localtime();
 
 								result = class.new.runTestMethod(script);
@@ -136,7 +148,6 @@
 								test["completed"] = true;
 								test["attemptsRemaining"] = nil;
 								test["duration"] = endTime.rawSeconds - startTime.rawSeconds;
-								~writeResult.(test_record, file);
 								///////////////////////////////
 
 								oldPasses.asArray.collect(_.identityHash).join(", ");

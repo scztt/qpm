@@ -26,6 +26,8 @@ def main():
     except CaughtSignal as e:
         traceback.print_exc()
         print(e)
+    except Exception as e:
+        print(e)
     finally:
         app.close()
     
