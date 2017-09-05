@@ -132,10 +132,10 @@ class QPMOutput(output.CementOutputHandler):
 							print (' ' * 14) + '%s' % unescape(" ".join(subtest['reason']).strip())
 			else:
 				if test_result.get('error'):
-					print template % failF('[!]  (No results found)')
-					print failF('!'.rjust(12)) + ' %s' % ('Error: %s' % test_result.get('error')).strip()
+					print template % failF('[!]') +  ' (No results found)'
+					print failF('!'.rjust(12)) + ' %s' % ('Error: "%s"' % test_result.get('error')).strip()
 				else:
 					print template % passF('     (completed)')
 		else:
-			print template % failF('[!]  (Did not complete)')
-			print failF('!'.rjust(12)) + ' %s' % ('Error: %s' % test_result.get('error')).strip()
+			print template % failF('[!]') + ' (Did not complete.)'
+			print failF('!'.rjust(12)) + ' %s' % ('Error: "%s"' % test_result.get('error')).strip()
