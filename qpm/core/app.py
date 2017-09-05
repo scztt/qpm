@@ -100,7 +100,7 @@ class QPMOutput(output.CementOutputHandler):
 
 		print summary_str
 		if summary['failed_tests'] > 0:
-			print 'Search for [?] or [!] to find failed tests.'
+			print 'Search for ? or ! to find failed tests.'
 
 
 	def render_test_result(self, test_result):
