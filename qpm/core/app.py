@@ -104,7 +104,7 @@ class QPMOutput(output.CementOutputHandler):
 
 
 	def render_test_result(self, test_result):
-		duration = int(test_result.get('duration', 0))
+		duration = float(test_result.get('duration', 0))
 		if isinstance(duration, numbers.Number): duration = "{0:.1f}".format(duration)
 
 		template = '%s '.rjust(7) + headingF('%s:%s (%ss)') % (test_result['suite'], test_result['test'], duration)
@@ -132,8 +132,10 @@ class QPMOutput(output.CementOutputHandler):
 							print (' ' * 14) + '%s' % unescape(" ".join(subtest['reason']).strip())
 			else:
 				if test_result.get('error'):
-					print template % failF('[!]  No results: ') + test_result.get('error')
+					print template % failF('[!]  (No results found)')
+					print failF('!'.rjust(12)) + ' %s' % ('Error: %s' % test_result.get('error')).strip()
 				else:
 					print template % passF('     (completed)')
 		else:
-			print template % failF('[!]  ') + test_result.get('error', 'Did not complete.')
+			print template % failF('[!]  (Did not complete)')
+			print failF('!'.rjust(12)) + ' %s' % ('Error: %s' % test_result.get('error')).strip()
