@@ -150,19 +150,13 @@
 								test["duration"] = endTime.rawSeconds - startTime.rawSeconds;
 								///////////////////////////////
 
-								oldPasses.asArray.collect(_.identityHash).join(", ");
-								IdentitySet.newFrom(class.passes).asArray.collect(_.identityHash).join(", ");
-
-								oldFailures.asArray.collect(_.identityHash).join(", ");
-								IdentitySet.newFrom(class.failures).asArray.collect(_.identityHash).join(", ");
-
 								newPasses = IdentitySet.newFrom(class.passes).difference(oldPasses);
 								newFailures = IdentitySet.newFrom(class.failures).difference(oldFailures);
 								test["results"] = List();
 								newPasses.do {
 									|pass|
 									test["results"].add((
-										"test": "" ++ pass.message,
+										"test": ("" ++ pass.message)[0..1000],
 										"pass": true,
 									))
 								};
@@ -170,8 +164,8 @@
 									|fail|
 									test["results"].add((
 										"pass": false,
-										"test": "" ++ fail.message.split($\n)[0],
-										"reason": fail.message.split($\n)[1..]
+										"test": ("" ++ fail.message.split($\n)[0])[0..1000],
+										"reason": (fail.message.split($\n)[1..])[0..1000]
 									))
 								};
 
