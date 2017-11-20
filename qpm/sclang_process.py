@@ -34,7 +34,7 @@ def find_classlibrary(root):
 			if CLASSLIB_NAME in dirnames:
 				result = os.path.join(dirpath, CLASSLIB_NAME)
 
-	return result	
+	return result
 
 def load_script(name):
 	script_path = os.path.join(os.path.split(__file__)[0], 'scscripts', name + '.scd')
@@ -149,7 +149,7 @@ class ScLangProcess:
 
 			if self.print_output:
 				#app.render({ "message": "Running: %s" % ' '.join(cmd) })
-				print "Running: %s" % ' '.join(cmd) 
+				print "Running: %s" % ' '.join(cmd)
 
 			self.proc = subprocess.Popen(cmd,
 				stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE,

@@ -11,7 +11,7 @@ class qpmTestApp(QPMApp):
     class Meta:
         argv = []
         config_files = []
-        
+
 def main():
     app = QPMApp()
     try:
@@ -30,6 +30,6 @@ def main():
         print(e)
     finally:
         app.close()
-    
+
 if __name__ == '__main__':
     main()

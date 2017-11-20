@@ -5,7 +5,7 @@ class qpmError(Exception):
     def __init__(self, msg):
         Exception.__init__(self)
         self.msg = msg
-    
+
     def __str__(self):
         return self.msg
 
@@ -16,7 +16,7 @@ class qpmConfigError(qpmError):
 class qpmRuntimeError(qpmError):
     """Generic runtime errors."""
     pass
-        
+
 class qpmArgumentError(qpmError):
     """Argument related errors."""
     pass
