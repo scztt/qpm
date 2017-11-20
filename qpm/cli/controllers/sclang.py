@@ -59,12 +59,12 @@ class SCLang_RunTest(SCLang_AbstractBase):
 				'action': 'store',
 				'nargs': '*'
 			}),
-            (['-l', '--location'], {
+			(['-l', '--location'], {
 				'help': 'Location of test plan file. If no tests are specified, the test plan will be resumed.',
 				'action': 'store',
 				'nargs': '?'
-            })
-        ]
+			})
+		]
 
 	@controller.expose(help="Run a unit test. Specify one or multiple using the form 'Class:test', or 'Class:*' for all tests.")
 	def default(self):
