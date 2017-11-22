@@ -12,9 +12,32 @@ Supported versions:
 Features and Usage
 ------------------
 
+### Run SuperCollider code
+
+    qpm execute '"hello world".postln' -p /path/to/sclang
+
+### Install quarks and list names and versions
+
+    qpm quark list
+    qpm quark versions ddwCommon
+
+### List tests available to a sclang executable
+
+	qpm test.list
+
+### Run tests
+
+    qpm test.run -p /path/to/sclang -l /json/test/spec
+
+### More info
+
 To see available options, use:
 
     qpm -h
+
+To see options available for a given subcommand:
+
+    qpm quark checkout -h
 
 Installing
 ----------
