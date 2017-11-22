@@ -54,11 +54,14 @@ def do_execute(sclang_path, code, includes=[], excludes=[], print_output=False):
 	if not(proc.launch()):
 		raise Exception("SuperCollider failed to launch.\nOutput: %s\nError: %s" % (proc.output, proc.error))
 
-	begin_token = re.escape("********EXECUTE********")
-	end_token = re.escape("********/EXECUTE********")
+	begin_token = "********EXECUTE********"
+	end_token = "********/EXECUTE********"
 
 	exec_string = '{ var result; result = {%s}.value(); "%s".postln; result.postln; "%s".postln; }.fork(AppClock);' % (code, begin_token, end_token)
-	regex_string = '%s\n(.*)\n%s' % (begin_token, end_token)
+
+	line_end = "\n" if sys.platform != 'win32' else "\r\n"
+	regex_string = '%s%s(.*)%s%s' % (re.escape(begin_token), line_end, line_end,
+									re.escape(end_token))
 
 	proc.execute(exec_string)
 	output, error = proc.wait_for(regex_string)
