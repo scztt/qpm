@@ -12,7 +12,7 @@ from qpm.set_non_block import set_fd_non_block
 
 SC_OUTPUT_PATTERN = "\x1B{10}(.*?)\x1B{10}"
 SC_LAUNCHED_STRING = r"Welcome to SuperCollider"
-SCLANG_NAME = "sclang"
+SCLANG_NAME = "sclang" if sys.platform != "win32" else "sclang.exe"
 CLASSLIB_NAME = "SCClassLibrary"
 
 def find_sclang_executable(root):
