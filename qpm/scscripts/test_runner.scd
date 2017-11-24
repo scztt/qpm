@@ -22,13 +22,13 @@
 	try {
 		test_record_string = File(file, "r").readAllString();
 	} { |err|
-		Error("testrun: Could not read input file %: %".format(file, err.what)).throw;
+		Error("getTestRecord: Could not read input file %: %".format(file, err.what)).throw;
 	};
 
 	try {
 		test_record = test_record_string.parseYAML();
 	} { |err|
-		Error("testrun: Could not parse input file: %".format(err.what)).throw;
+		Error("getTestRecord: Could not parse input file: %".format(err.what)).throw;
 	};
 
 	test_record;
