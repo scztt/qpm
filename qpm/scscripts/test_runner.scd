@@ -40,8 +40,8 @@
 
 	if (suiteGlob.notEmpty) {
 		var all = UnitTest.allTestClasses.keys.select({ |t| t != "...All..." }).asArray.collect({
-			|classSym|
-			Dictionary.newFrom(("suite": classSym.asSymbol.asClass.asString, "test": "*"))
+			|className|
+			Dictionary.newFrom(("suite": "Test" ++ className, "test": "*"))
 		});
 		testsDict.removeAll(suiteGlob);
 		testsDict = all ++ testsDict;
