@@ -14,8 +14,9 @@
 	file.close();
 };
 
-~testrun = {
-	| file |
+// safely extract the test record dictionary from the input file
+~getTestRecord = {
+	|file|
 	var test_record, test_record_string;
 
 	try {
@@ -29,6 +30,14 @@
 	} { |err|
 		Error("testrun: Could not parse input file: %".format(err.what)).throw;
 	};
+
+	test_record;
+};
+
+~testrun = {
+	| file |
+
+	var test_record = ~getTestRecord.(file);
 
 	if (test_record["tests"].isEmpty) {
 		Error("testrun: No tests defined").throw;
