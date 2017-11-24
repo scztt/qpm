@@ -60,7 +60,7 @@
 	};
 
 	try {
-		var tests, skipped, settings, toExpand, toExclude, starStarTests;
+		var tests, skipped, settings, toExpand, toExclude;
 		UnitTest.findTestClasses();
 
 		test_record["tests"] = ~expandSuiteGlob.(test_record["tests"]);
