@@ -34,6 +34,22 @@
 	test_record;
 };
 
+// expand { suite: * } to a dictionary of { test: * } records
+~expandSuiteGlob = { |testsDict|
+	var suiteGlob = testsDict.select { |item| item["suite"] == "*" };
+
+	if (suiteGlob.notEmpty) {
+		var all = UnitTest.allTestClasses.keys.select({ |t| t != "...All..." }).asArray.collect({
+			|classSym|
+			Dictionary.newFrom(("suite": classSym.asSymbol.asClass.asString, "test": "*"))
+		});
+		testsDict.removeAll(suiteGlob);
+		testsDict = all ++ testsDict;
+	};
+
+	testsDict;
+};
+
 ~testrun = {
 	| file |
 
@@ -47,19 +63,7 @@
 		var tests, skipped, settings, toExpand, toExclude, starStarTests;
 		UnitTest.findTestClasses();
 
-		starStarTests = test_record["tests"].select({
-			|item|
-			item["suite"] == "*"
-		});
-		test_record["tests"].removeAll(starStarTests);
-
-		if (starStarTests.notEmpty) {
-			var all = UnitTest.allTestClasses.keys.select({ |t| t != "...All..." }).asArray.collect({
-				|classSym|
-				Dictionary.newFrom(("suite": classSym.asSymbol.asClass.asString, "test": "*"))
-			});
-			test_record["tests"] = all ++ test_record["tests"]
-		};
+		test_record["tests"] = ~expandSuiteGlob.(test_record["tests"]);
 
 		test_record["tests"] = List.newFrom(test_record["tests"].collect(Dictionary.newFrom(_)));
 
