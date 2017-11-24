@@ -30,13 +30,13 @@
 		Error("testrun: Could not parse input file: %".format(err.what)).throw;
 	};
 
+	if (test_record["tests"].isEmpty) {
+		Error("testrun: No tests defined").throw;
+	};
+
 	try {
 		var tests, skipped, settings, toExpand, toExclude, starStarTests;
 		UnitTest.findTestClasses();
-
-		if (test_record["tests"].isEmpty) {
-			Error("No tests defined").throw;
-		};
 
 		starStarTests = test_record["tests"].select({
 			|item|
