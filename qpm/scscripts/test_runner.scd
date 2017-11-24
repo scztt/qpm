@@ -17,7 +17,12 @@
 ~testrun = {
 	| file |
 	var test_record, test_record_string;
-	test_record_string = File(file, "r").readAllString();
+	try {
+		test_record_string = File(file, "r").readAllString();
+	} { |err|
+		Error("testrun: Could not read input file %: %".format(file, err.what)).throw;
+	};
+
 	try {
 		var tests, skipped, settings, toExpand, toExclude, starStarTests;
 		test_record = test_record_string.parseYAML();
