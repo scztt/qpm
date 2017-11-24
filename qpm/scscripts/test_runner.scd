@@ -194,7 +194,11 @@
 
 
 {
-	~testrun.(~testRecord);
+	try {
+		~testrun.(~testRecord);
+	} { |err|
+		err.what.error;
+	};
 	"******** DONE ********".postln;
 	0.exit;
 }.forkIfNeeded(AppClock);
