@@ -17,6 +17,7 @@
 ~testrun = {
 	| file |
 	var test_record, test_record_string;
+
 	try {
 		test_record_string = File(file, "r").readAllString();
 	} { |err|
@@ -24,9 +25,13 @@
 	};
 
 	try {
-		var tests, skipped, settings, toExpand, toExclude, starStarTests;
 		test_record = test_record_string.parseYAML();
+	} { |err|
+		Error("testrun: Could not parse input file: %".format(err.what)).throw;
+	};
 
+	try {
+		var tests, skipped, settings, toExpand, toExclude, starStarTests;
 		UnitTest.findTestClasses();
 
 		if (test_record["tests"].isEmpty) {
