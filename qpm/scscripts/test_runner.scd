@@ -25,7 +25,7 @@
 		UnitTest.findTestClasses();
 
 		if (test_record["tests"].isEmpty) {
-			"No tests defined".throw;
+			Error("No tests defined").throw;
 		};
 
 		starStarTests = test_record["tests"].select({
