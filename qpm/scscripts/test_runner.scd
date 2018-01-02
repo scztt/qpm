@@ -14,33 +14,56 @@
 	file.close();
 };
 
+// safely extract the test record dictionary from the input file
+~getTestRecord = {
+	|file|
+	var test_record, test_record_string;
+
+	try {
+		test_record_string = File(file, "r").readAllString();
+	} { |err|
+		Error("getTestRecord: Could not read input file %: %".format(file, err.what)).throw;
+	};
+
+	try {
+		test_record = test_record_string.parseYAML();
+	} { |err|
+		Error("getTestRecord: Could not parse input file: %".format(err.what)).throw;
+	};
+
+	test_record;
+};
+
+// expand { suite: * } to a dictionary of { test: * } records
+~expandSuiteGlob = { |testsDict|
+	var suiteGlob = testsDict.select { |item| item["suite"] == "*" };
+
+	if (suiteGlob.notEmpty) {
+		var all = UnitTest.allTestClasses.keys.select({ |t| t != "...All..." }).asArray.collect({
+			|className|
+			Dictionary.newFrom(("suite": "Test" ++ className, "test": "*"))
+		});
+		testsDict.removeAll(suiteGlob);
+		testsDict = all ++ testsDict;
+	};
+
+	testsDict;
+};
+
 ~testrun = {
 	| file |
-	var test_record, test_record_string;
-	test_record_string = File(file, "r").readAllString();
-	try {
-		var tests, skipped, settings, toExpand, toExclude, starStarTests;
-		test_record = test_record_string.parseYAML();
 
+	var test_record = ~getTestRecord.(file);
+
+	if (test_record["tests"].isEmpty) {
+		Error("testrun: No tests defined").throw;
+	};
+
+	try {
+		var tests, skipped, settings, toExpand, toExclude;
 		UnitTest.findTestClasses();
 
-		if (test_record["tests"].isEmpty) {
-			"No tests defined".throw;
-		};
-
-		starStarTests = test_record["tests"].select({
-			|item|
-			item["suite"] == "*"
-		});
-		test_record["tests"].removeAll(starStarTests);
-
-		if (starStarTests.notEmpty) {
-			var all = UnitTest.allTestClasses.keys.select({ |t| t != "...All..." }).asArray.collect({
-				|classSym|
-				Dictionary.newFrom(("suite": classSym.asSymbol.asClass.asString, "test": "*"))
-			});
-			test_record["tests"] = all ++ test_record["tests"]
-		};
+		test_record["tests"] = ~expandSuiteGlob.(test_record["tests"]);
 
 		test_record["tests"] = List.newFrom(test_record["tests"].collect(Dictionary.newFrom(_)));
 
@@ -194,7 +217,11 @@
 
 
 {
-	~testrun.(~testRecord);
+	try {
+		~testrun.(~testRecord);
+	} { |err|
+		err.what.error;
+	};
 	"******** DONE ********".postln;
 	0.exit;
 }.forkIfNeeded(AppClock);
