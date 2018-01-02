@@ -2,7 +2,7 @@
 
 from qpm.cli.main import qpmTestApp
 from cement.utils import test
-    
+
 class qpmTestCase(test.CementTestCase):
     def setUp(self):
         super(qpmTestCase, self).setUp()

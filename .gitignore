@@ -5,3 +5,5 @@
 /.Python
 .idea
 _env
+qpm.egg-info/
+.vimrc

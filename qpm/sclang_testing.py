@@ -27,7 +27,7 @@ def find_unit_test_quarks(include_gui=False):
 def find_tests(sclang_path, print_output=False, includes=[], excludes=[]):
 	code = process.load_script('list_tests')
 
-	output, error = process.do_execute(sclang_path, code, 
+	output, error = process.do_execute(sclang_path, code,
 		includes=find_unit_test_quarks() + includes,
 		excludes=excludes,
 		print_output=print_output)
@@ -58,7 +58,7 @@ class SCTestRun:
 
 		if test_plan_path:
 			self.test_plan_path = test_plan_path
-		else:	
+		else:
 			fd, self.test_plan_path = tempfile.mkstemp('.json', 'SCTestRun_record_' + "_".join([str(date.day), str(date.month), str(date.year)]))
 
 		if test_plan:
