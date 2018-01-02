@@ -1,5 +1,4 @@
 import sys
-import fcntl
 import os.path
 import subprocess
 import time
@@ -9,9 +8,11 @@ import json
 import re
 import appdirs
 
+from qpm.set_non_block import set_fd_non_block
+
 SC_OUTPUT_PATTERN = "\x1B{10}(.*?)\x1B{10}"
 SC_LAUNCHED_STRING = r"Welcome to SuperCollider"
-SCLANG_NAME = "sclang"
+SCLANG_NAME = "sclang" if sys.platform != "win32" else "sclang.exe"
 CLASSLIB_NAME = "SCClassLibrary"
 
 def find_sclang_executable(root):
@@ -21,7 +22,7 @@ def find_sclang_executable(root):
 	else:
 		for dirpath, dirnames, filenames in os.walk(root):
 			if SCLANG_NAME in filenames:
-				result = os.path.join(dirpath, "sclang")
+				result = os.path.join(dirpath, SCLANG_NAME)
 
 	return result
 
@@ -53,11 +54,14 @@ def do_execute(sclang_path, code, includes=[], excludes=[], print_output=False):
 	if not(proc.launch()):
 		raise Exception("SuperCollider failed to launch.\nOutput: %s\nError: %s" % (proc.output, proc.error))
 
-	begin_token = re.escape("********EXECUTE********")
-	end_token = re.escape("********/EXECUTE********")
+	begin_token = "********EXECUTE********"
+	end_token = "********/EXECUTE********"
 
 	exec_string = '{ var result; result = {%s}.value(); "%s".postln; result.postln; "%s".postln; }.fork(AppClock);' % (code, begin_token, end_token)
-	regex_string = '%s\n(.*)\n%s' % (begin_token, end_token)
+
+	line_end = "\n" if sys.platform != 'win32' else "\r\n"
+	regex_string = '%s%s(.*)%s%s' % (re.escape(begin_token), line_end, line_end,
+									re.escape(end_token))
 
 	proc.execute(exec_string)
 	output, error = proc.wait_for(regex_string)
@@ -70,13 +74,11 @@ def do_execute(sclang_path, code, includes=[], excludes=[], print_output=False):
 
 def set_non_block(output):
 	fd = output.fileno()
-	fl = fcntl.fcntl(fd, fcntl.F_GETFL)
-	fcntl.fcntl(fd, fcntl.F_SETFL, fl | os.O_NONBLOCK)
+	set_fd_non_block(fd)
 
 def safe_read(output):
 	fd = output.fileno()
-	fl = fcntl.fcntl(fd, fcntl.F_GETFL)
-	fcntl.fcntl(fd, fcntl.F_SETFL, fl | os.O_NONBLOCK)
+	set_fd_non_block(fd)
 	try:
 		return output.read()
 	except Exception, e:
@@ -153,7 +155,7 @@ class ScLangProcess:
 
 			self.proc = subprocess.Popen(cmd,
 				stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE,
-				env=env, close_fds=True)
+				env=env, close_fds=sys.platform!='win32')
 
 			self.start_time = time.time()
 			self.launched = True

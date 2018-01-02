@@ -26,7 +26,13 @@ class SCLang_Execute(SCLang_AbstractBase):
 		sclang = process.find_sclang_executable(self.app.pargs.path)
 		code = self.app.pargs.code[0]
 
-		output, error = process.do_execute(sclang, code, self.app.pargs.print_output)
+		output, error = process.do_execute(
+			sclang,
+			code,
+			self.app.pargs.include,
+			self.app.pargs.exclude,
+			self.app.pargs.print_output
+		)
 
 		if output:
 			self.app.render({ "result": output })
