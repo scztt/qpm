@@ -11,7 +11,7 @@ class qpmTestApp(QPMApp):
     class Meta:
         argv = []
         config_files = []
-        
+
 def main():
     app = QPMApp()
     try:
@@ -26,8 +26,10 @@ def main():
     except CaughtSignal as e:
         traceback.print_exc()
         print(e)
+    except Exception as e:
+        print(e)
     finally:
         app.close()
-    
+
 if __name__ == '__main__':
     main()

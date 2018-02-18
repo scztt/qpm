@@ -22,6 +22,7 @@ class QPMApp(foundation.CementApp):
 		base_controller = QPMBaseController
 		output_handler = 'qpmoutput'
 		bootstrap = 'qpm.cli.bootstrap'
+		exit_on_close = True
 
 
 # RENDERING
@@ -32,6 +33,7 @@ def unescape(string):
 headingF = lambda s: (colorama.Style.BRIGHT + s + colorama.Style.RESET_ALL)
 passF = lambda s: (colorama.Fore.GREEN + s + colorama.Fore.RESET)
 failF = lambda s: (colorama.Fore.RED + s + colorama.Fore.RESET)
+skipF = lambda s: (colorama.Fore.YELLOW + s + colorama.Fore.RESET)
 ind = lambda n: ' ' * n
 
 class QPMOutput(output.CementOutputHandler):
@@ -43,6 +45,7 @@ class QPMOutput(output.CementOutputHandler):
 		render_method = getattr(self, 'render_' + template)
 		if render_method:
 			render_method(data)
+		return ""
 
 	def render_default(self, data):
 		print data
@@ -88,13 +91,17 @@ class QPMOutput(output.CementOutputHandler):
 				summary_str += passF(' %s TESTS PASSED' % summary['total_tests'])
 			else:
 				summary_str += failF(' %s TESTS FAILED' % summary['failed_tests'])
+				if summary['skipped_tests'] > 0:
+					summary_str += ', ' + skipF('%s skipped' % summary['skipped_tests'])
 				summary_str += (', out of %s' % summary['total_tests'])
 
-			summary_str += (' (total duration: {0:.1f}s)'.format(summary['duration']))
+			summary_str += (' (total duration: {0:.1f}s)'.format(int(summary.get('duration', 0))))
 		else:
 			summary_str += failF("NO TESTS RUN")
 
 		print summary_str
+		if summary['failed_tests'] > 0:
+			print 'Search for ? or ! to find failed tests.'
 
 	def render_quark_info(self, summary):
 		for quark_name in summary:
@@ -113,17 +120,25 @@ class QPMOutput(output.CementOutputHandler):
 						print (' ' * 4) + ('%s: ' % key).rjust(15) + val
 
 	def render_test_result(self, test_result):
-		duration = test_result.get('duration', '-')
+		duration = float(test_result.get('duration', 0))
 		if isinstance(duration, numbers.Number): duration = "{0:.1f}".format(duration)
 
 		template = '%s '.rjust(7) + headingF('%s:%s (%ss)') % (test_result['suite'], test_result['test'], duration)
 		completed = (test_result.get('completed') == True)
 		if completed:
-			if test_result.get('results'):
+			if test_result.get('skip'):
+				print template % skipF('[-]  ') + (' Skipped (reason: %s)' % test_result.get('skipReason')).rjust(12)
+			elif test_result.get('results'):
 				total = len(test_result['results'])
 				passing = len(filter(lambda p: p.get('pass', False), test_result['results']))
-				format = passF if (total == passing) else failF
+
+				format = passF if (total == passing and not test_result.get('error')) else failF
 				print template % format('[%d/%d]' % (passing, total))
+
+				if test_result.get('error'):
+					total += 1
+					print failF('!'.rjust(12)) + ' %s' % ('Encountered error: %s' % test_result.get('error')).strip()
+
 				for subtest in test_result.get('results', []):
 					if subtest.get('pass', False):
 						print passF('*'.rjust(12)) + ' %s' % unescape(subtest.get('test')).strip()
@@ -133,8 +148,10 @@ class QPMOutput(output.CementOutputHandler):
 							print (' ' * 14) + '%s' % unescape(" ".join(subtest['reason']).strip())
 			else:
 				if test_result.get('error'):
-					print template % failF('[!]  No results: ') + test_result.get('error')
+					print template % failF('[!]') +  ' (No results found)'
+					print failF('!'.rjust(12)) + ' %s' % ('Error: "%s"' % test_result.get('error')).strip()
 				else:
 					print template % passF('     (completed)')
 		else:
-			print template % failF('[!]  ') + test_result.get('error', 'Did not complete.')
+			print template % failF('[!]') + ' (Did not complete.)'
+			print failF('!'.rjust(12)) + ' %s' % ('Error: "%s"' % test_result.get('error')).strip()

@@ -10,7 +10,7 @@ import base64
 GITHUB_GIT_URL_REGEXP = r"git://github\.com/([^!]+?)/([^@/]*)"
 GITHUB_HTTP_URL_REGEXP = r"http.://github\.com/([^!]+?)/([^@/]*)"
 GITHUB_QUARKFILE_PATTERN = r"[^/]+.quark"
-GITHUB_OAUTH = 'd01013017e5a983732295633447088fefd0aa3f0'
+GITHUB_OAUTH = os.getenv('GITHUB_OAUTH', 'e76bd60dd1878be9db79d468dc9917f1961443d0')
 
 NUMERIC_VERSION = r"[vV]?[0-9](\.[0-9]+)+\w*"
 
@@ -18,8 +18,11 @@ minicache = dict()
 
 def github_download(url, destination, ensure_dirs=True):
 	base_url = 'https://api.github.com/'
+	headers = {}
 	if not(url.startswith("http")):
 		url = base_url + url
+		# only use auth tokens with an api.github.com header
+		headers = {'Authorization': 'token %s' % GITHUB_OAUTH}
 
 	base_path = os.path.split(destination)[0]
 	if not(os.path.exists(base_path)):
@@ -27,7 +30,7 @@ def github_download(url, destination, ensure_dirs=True):
 
 	size = 0
 	with open(destination, 'w') as f:
-		req = requests.get(url, headers={'Authorization': 'token %s' % GITHUB_OAUTH}, stream=True)
+		req = requests.get(url, headers=headers, stream=True)
 		if not(req.ok):
 			raise Exception('Failed to access url: %s (%s)' % (url, req.status_code))
 

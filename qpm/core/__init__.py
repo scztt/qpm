@@ -5,17 +5,17 @@ class qpmError(Exception):
     def __init__(self, msg):
         Exception.__init__(self)
         self.msg = msg
-    
+
     def __str__(self):
         return self.msg
 
-            
+
 class qpmConfigError(qpmError):
     pass
 
 class qpmRuntimeError(qpmError):
     pass
-        
+
 class qpmArgumentError(qpmError):
     pass
 

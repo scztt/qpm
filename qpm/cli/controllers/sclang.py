@@ -26,7 +26,13 @@ class SCLang_Execute(SCLang_AbstractBase):
 		sclang = process.find_sclang_executable(self.app.pargs.path)
 		code = self.app.pargs.code[0]
 
-		output, error = process.do_execute(sclang, code, self.app.pargs.print_output)
+		output, error = process.do_execute(
+			sclang,
+			code,
+			self.app.pargs.include,
+			self.app.pargs.exclude,
+			self.app.pargs.print_output
+		)
 
 		if output:
 			self.app.render({ "result": output })
@@ -43,7 +49,8 @@ class SCLang_ListTests(SCLang_AbstractBase):
 	def default(self):
 		sclang = process.find_sclang_executable(self.app.pargs.path)
 		try:
-			result = testing.find_tests(sclang, self.app.pargs.print_output)
+			result = testing.find_tests(sclang, self.app.pargs.print_output,
+				self.app.pargs.include, self.app.pargs.exclude)
 			self.app.render(result, 'test_list')
 		except Exception, e:
 			self.app.render(e, 'error')
@@ -58,12 +65,12 @@ class SCLang_RunTest(SCLang_AbstractBase):
 				'action': 'store',
 				'nargs': '*'
 			}),
-            (['-l', '--location'], {
+			(['-l', '--location'], {
 				'help': 'Location of test plan file. If no tests are specified, the test plan will be resumed.',
 				'action': 'store',
 				'nargs': '?'
-            })
-        ]
+			})
+		]
 
 	@controller.expose(help="Run a unit test. Specify one or multiple using the form 'Class:test', or 'Class:*' for all tests.")
 	def default(self):
@@ -94,7 +101,7 @@ class SCLang_RunTest(SCLang_AbstractBase):
 				test_plan_path = self.app.pargs.location
 
 			try:
-				test_run = testing.SCTestRun(sclang, test_plan=test_plan, test_plan_path=test_plan_path, includes=self.app.pargs.include)
+				test_run = testing.SCTestRun(sclang, test_plan=test_plan, test_plan_path=test_plan_path, includes=self.app.pargs.include, excludes=self.app.pargs.exclude)
 				test_run.print_stdout = self.app.pargs.print_output
 				result = test_run.run()
 				summary = generate_summary(result, test_run.duration)
@@ -104,29 +111,39 @@ class SCLang_RunTest(SCLang_AbstractBase):
 				self.app.render(summary, 'test_summary')
 
 				if summary['failed_tests'] > 0:
-					self.app.close(1)
+					#self.app.close(summary['failed_tests'])
+					self.app.close(summary['failed_tests'])
+				else:
+					self.app.close(0)
 
 			except Exception, e:
 				self.app.render(e, 'error')
+				self.app.close(1)
 
 def generate_summary(test_plan, duration):
 	total = 0
 	failed = 0
+	skipped = 0
 	for test in test_plan.get('tests', []):
 		if not(test.get('results')):
-			if not(test.get('error')):
-				test['results'] = [{'test': 'completed without error', 'pass': 'true'}]
+			if test.get('skip'):
+				skipped += 1
 			else:
-				test['results'] = [{'test': 'completed without error', 'pass': 'false'}]
+				if not(test.get('error')):
+					test['results'] = [{'test': 'completed without error', 'pass': 'true'}]
+				else:
+					test['results'] = [{'test': 'completed without error', 'pass': 'false'}]
 
 		for subtest in test.get('results', []):
 			total += 1
 			if not(subtest.get('pass')) or subtest.get('pass') == 'false':
-				failed += 1
+				if not(test.get('skip')):
+					failed += 1
 
 	return {
 		'total_tests': total,
 		'failed_tests': failed,
+		'skipped_tests': skipped,
 		'duration': duration
 	}
 

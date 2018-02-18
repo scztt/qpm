@@ -1,5 +1,4 @@
 import sys
-import fcntl
 import os.path
 import subprocess
 import time
@@ -11,9 +10,12 @@ import datetime
 
 import appdirs
 
+from qpm.set_non_block import set_fd_non_block
+
 SC_OUTPUT_PATTERN = "\x1B{10}(.*?)\x1B{10}"
 SC_LAUNCHED_STRING = r"Welcome to SuperCollider"
-SCLANG_NAME = "sclang"
+SCLANG_NAME = "sclang" if sys.platform != "win32" else "sclang.exe"
+CLASSLIB_NAME = "SCClassLibrary"
 
 def find_sclang_executable(root):
 	result = False
@@ -22,7 +24,18 @@ def find_sclang_executable(root):
 	else:
 		for dirpath, dirnames, filenames in os.walk(root):
 			if SCLANG_NAME in filenames:
-				result = os.path.join(dirpath, "sclang")
+				result = os.path.join(dirpath, SCLANG_NAME)
+
+	return result
+
+def find_classlibrary(root):
+	result = False
+	if os.path.split(root)[1] == CLASSLIB_NAME:
+		result = root
+	else:
+		for dirpath, dirnames, filenames in os.walk(root):
+			if CLASSLIB_NAME in dirnames:
+				result = os.path.join(dirpath, CLASSLIB_NAME)
 
 	return result
 
@@ -32,39 +45,42 @@ def load_script(name):
 		script = f.read()
 		return script
 
-def do_execute(sclang_path, code, print_output=False):
+def do_execute(sclang_path, code, includes=[], excludes=[], print_output=False):
 	if not(sclang_path) or not(os.path.exists(sclang_path)):
 		raise Exception("No sclang binary found in path %s" % sclang_path)
 
 	#app.render({ "message": "Launching sclang at %s" % sclang_path })
 	proc = ScLangProcess(sclang_path, print_output=print_output)
+	for i in includes: proc.include(i)
+	for e in excludes: proc.exclude(e)
 	if not(proc.launch()):
 		raise Exception("SuperCollider failed to launch.\nOutput: %s\nError: %s" % (proc.output, proc.error))
 
-	begin_token = re.escape("********EXECUTE********")
-	end_token = re.escape("********/EXECUTE********")
+	begin_token = "********EXECUTE********"
+	end_token = "********/EXECUTE********"
 
 	exec_string = '{ var result; result = {%s}.value(); "%s".postln; result.postln; "%s".postln; }.fork(AppClock);' % (code, begin_token, end_token)
-	regex_string = '%s\n(.*)\n%s' % (begin_token, end_token)
+
+	line_end = "\n" if sys.platform != 'win32' else "\r\n"
+	regex_string = '%s%s(.*)%s%s' % (re.escape(begin_token), line_end, line_end,
+									re.escape(end_token))
 
 	proc.execute(exec_string)
 	output, error = proc.wait_for(regex_string)
 
 	if output:
-			return output.group(1), error
+		return output.group(1), error
 	else:
 		print error
 		return "", error
 
 def set_non_block(output):
 	fd = output.fileno()
-	fl = fcntl.fcntl(fd, fcntl.F_GETFL)
-	fcntl.fcntl(fd, fcntl.F_SETFL, fl | os.O_NONBLOCK)
+	set_fd_non_block(fd)
 
 def safe_read(output):
 	fd = output.fileno()
-	fl = fcntl.fcntl(fd, fcntl.F_GETFL)
-	fcntl.fcntl(fd, fcntl.F_SETFL, fl | os.O_NONBLOCK)
+	set_fd_non_block(fd)
 	try:
 		return output.read()
 	except Exception, e:
@@ -80,7 +96,7 @@ def system_extensions():
 
 
 class ScLangProcess:
-	def __init__(self, path, headless=True, print_output=False):
+	def __init__(self, path, classlib=None, headless=True, print_output=False):
 		assert(os.path.exists(path))
 		self.print_output = print_output
 		self.path = path
@@ -94,6 +110,11 @@ class ScLangProcess:
 		self.error = ""
 		self.includes = set()
 		self.excludes = set()
+		self.classlib = classlib if (classlib != None) else find_classlibrary(os.path.dirname(os.path.dirname(path)))
+		if not(self.classlib):
+			raise Exception("Could not find classlib.")
+		else:
+			self.includes.add(self.classlib)
 
 	def include(self, path):
 		self.includes.add(path)
@@ -125,12 +146,18 @@ class ScLangProcess:
 				subprocess.Popen('sh -e /etc/init.d/xvfb start', shell=True, env=env)
 				subprocess.Popen("/sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -ac -screen 0 1280x1024x16", shell=True, env=env)
 
-			cmd = [self.path, '-i' 'python']
-			self.create_sclang_conf()
-			cmd = cmd + ['-l', '%s' % self.sclang_conf_path]
+			cmd = [self.path, '-i' 'python', '-a']
+			if self.includes or self.excludes:
+				self.create_sclang_conf()
+				cmd = cmd + ['-l', '%s' % self.sclang_conf_path]
+
+			if self.print_output:
+				#app.render({ "message": "Running: %s" % ' '.join(cmd) })
+				print "Running: %s" % ' '.join(cmd)
+
 			self.proc = subprocess.Popen(cmd,
 				stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE,
-				env=env, close_fds=True)
+				env=env, close_fds=sys.platform!='win32')
 
 			self.start_time = time.time()
 			self.launched = True

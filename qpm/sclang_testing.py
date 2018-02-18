@@ -7,10 +7,31 @@ import re
 import sclang_process as process
 from sclang_process import ScLangProcess
 
-def find_tests(sclang_path, print_output=False):
+def find_unit_test_quarks(include_gui=False):
+	root = os.path.split(__file__)[0]
+	paths = []
+
+	unit_path = os.path.join(root, 'scscripts', 'UnitTesting')
+	common_path = os.path.join(root, 'scscripts', 'CommonTests')
+	gui_path = os.path.join(root, 'scscripts', 'CommonTestsGUI')
+
+	if os.path.exists(unit_path):
+		paths.append(unit_path)
+	if os.path.exists(common_path):
+		paths.append(common_path)
+	if include_gui and os.path.exists(gui_path):
+		paths.append(gui_path)
+
+	return paths
+
+def find_tests(sclang_path, print_output=False, includes=[], excludes=[]):
 	code = process.load_script('list_tests')
 
-	output, error = process.do_execute(sclang_path, code, print_output)
+	output, error = process.do_execute(sclang_path, code,
+		includes=find_unit_test_quarks() + includes,
+		excludes=excludes,
+		print_output=print_output)
+
 	if error:
 		raise Exception(error)
 	else:
@@ -18,7 +39,7 @@ def find_tests(sclang_path, print_output=False):
 		return obj
 
 class SCTestRun:
-	def __init__(self, sclang_path, test_plan=None, test_plan_path=None, includes=[], restarts=5, timeout=10*60):
+	def __init__(self, sclang_path, test_plan=None, test_plan_path=None, excludes=[], includes=[], restarts=1, timeout=10*60):
 		self.tests = dict()
 		self.results = dict()
 		self.sclang_path = sclang_path
@@ -28,16 +49,16 @@ class SCTestRun:
 		self.run_started = None
 		self.process = None
 		self.started = False
-		self.duration = None
+		self.duration = -1
 		self.print_stdout = False
 		self.includes = includes
-		self.unit_test_quark_path = os.path.join(os.path.split(__file__)[0], 'scscripts', 'UnitTesting')
+		self.unit_test_quark_paths = find_unit_test_quarks()
 
 		date = datetime.date.today()
 
 		if test_plan_path:
 			self.test_plan_path = test_plan_path
-		else:	
+		else:
 			fd, self.test_plan_path = tempfile.mkstemp('.json', 'SCTestRun_record_' + "_".join([str(date.day), str(date.month), str(date.year)]))
 
 		if test_plan:
@@ -87,8 +108,8 @@ class SCTestRun:
 				raise Exception('Test plan has no tests!')
 
 	def run(self):
+		start_time = time.time()
 		if not(self.started) and not(self.all_tests_completed()):
-			start_time = time.time()
 
 			attempt = 0
 			while not(self.all_tests_completed()) and self.restarts > 0:
@@ -100,8 +121,8 @@ class SCTestRun:
 
 				self.process = ScLangProcess(self.sclang_path, print_output=self.print_stdout)
 				self.process.exclude_extensions()
-				self.process.include(self.unit_test_quark_path)
-				for include in self.includes:
+
+				for include in (self.includes + self.unit_test_quark_paths):
 					self.process.include(include)
 
 				self.process.launch()
@@ -112,8 +133,9 @@ class SCTestRun:
 
 			self.started = False
 
-			end_time = time.time()
-			self.duration = end_time - start_time
+		end_time = time.time()
+		self.duration = end_time - start_time
+
 		return self.test_plan
 
 	def all_tests_completed(self):
