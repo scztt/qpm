@@ -23,6 +23,9 @@ class SCLang_Execute(SCLang_AbstractBase):
 
 	@controller.expose(help="Execute some code in sclang.", hide=True)
 	def default(self):
+		if os.environ.get('QPM_DEBUG') != '0':
+			self.app.pargs.print_output = True
+
 		sclang = process.find_sclang_executable(self.app.pargs.path)
 		code = self.app.pargs.code[0]
 
@@ -47,6 +50,9 @@ class SCLang_ListTests(SCLang_AbstractBase):
 
 	@controller.expose(help="List unit tests available in sclang.")
 	def default(self):
+		if os.environ.get('QPM_DEBUG') != '0':
+			self.app.pargs.print_output = True
+
 		sclang = process.find_sclang_executable(self.app.pargs.path)
 		try:
 			result = testing.find_tests(sclang, self.app.pargs.print_output,
@@ -74,6 +80,9 @@ class SCLang_RunTest(SCLang_AbstractBase):
 
 	@controller.expose(help="Run a unit test. Specify one or multiple using the form 'Class:test', or 'Class:*' for all tests.")
 	def default(self):
+		if os.environ.get('QPM_DEBUG') != '0':
+			self.app.pargs.print_output = True
+
 		sclang = process.find_sclang_executable(self.app.pargs.path)
 
 		if sclang:
@@ -146,10 +155,3 @@ def generate_summary(test_plan, duration):
 		'skipped_tests': skipped,
 		'duration': duration
 	}
-
-
-
-
-
-
-
