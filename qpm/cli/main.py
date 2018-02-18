@@ -1,10 +1,14 @@
 """Qpm main application entry point."""
 
 import traceback
+import sys
 from cement.core import foundation, backend
 from cement.core.exc import FrameworkError, CaughtSignal
 from qpm.core.app import *
 from qpm.core.exc import *
+from .. import settings
+
+global_app = None
 
 class qpmTestApp(QPMApp):
     """A test app that is better suited for testing."""
@@ -13,10 +17,14 @@ class qpmTestApp(QPMApp):
         config_files = []
 
 def main():
-    app = QPMApp()
+    if os.environ.get('QPM_DEBUG') != '0':
+        sys.argv += ['--debug']
+
+    global global_app
+    global_app = QPMApp(output_handler=QPMOutput, config_defauslts=settings.defaults)
     try:
-        app.setup()
-        app.run()
+        global_app.setup()
+        global_app.run()
     except qpmError as e:
         traceback.print_exc()
         print(e)
@@ -29,7 +37,7 @@ def main():
     except Exception as e:
         print(e)
     finally:
-        app.close()
+        global_app.close()
 
 if __name__ == '__main__':
     main()

@@ -7,7 +7,7 @@ import yaml
 import json
 import re
 import datetime
-
+from qpm.cli.main import global_app
 import appdirs
 
 from qpm.set_non_block import set_fd_non_block
@@ -141,6 +141,7 @@ class ScLangProcess:
 			env = dict(os.environ)
 
 			if sys.platform == 'linux2' and self.headless:
+				global_app.log.debug('Initializing offscreen display.')
 				env['QT_PLATFORM_PLUGIN'] = 'offscreen'
 				env['DISPLAY'] = ':99.0'
 				subprocess.Popen('sh -e /etc/init.d/xvfb start', shell=True, env=env)
@@ -155,9 +156,11 @@ class ScLangProcess:
 				#app.render({ "message": "Running: %s" % ' '.join(cmd) })
 				print "Running: %s" % ' '.join(cmd)
 
+			global_app.log.debug('Launching with command: %s' % (' '.join(cmd)))
 			self.proc = subprocess.Popen(cmd,
 				stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE,
 				env=env, close_fds=sys.platform!='win32')
+			global_app.log.debug('Launch result: %s' % self.proc)
 
 			self.start_time = time.time()
 			self.launched = True
@@ -170,6 +173,8 @@ class ScLangProcess:
 			else:
 				self.error = error
 				return False
+		else:
+			return self.ready
 
 	def wait_for(self, regex, timeout=30, kill_on_error=True):
 		output = ""
@@ -180,6 +185,8 @@ class ScLangProcess:
 		set_non_block(self.proc.stdin)
 		set_non_block(self.proc.stdout)
 
+		global_app.log.debug('Beginning wait for: %s' % regex)
+
 		while self.running() and not(re_match) and time.time() < (start_time + timeout):
 			read = safe_read(self.proc.stdout)
 			if self.print_output and read: print read
@@ -188,17 +195,20 @@ class ScLangProcess:
 			re_match = re.search(regex, output, re.DOTALL)
 
 			if error and kill_on_error:
+				global_app.log.debug('Killing because of error')
 				self.kill()
 				break
 
-			time.sleep(00.5)
+			time.sleep(0.5)
 
 		self.output += output
 		self.error += error
 
 		if (error):
+			global_app.log.debug('Wait resulted in error: %s' % error)
 			return (None, error)
 		else:
+			global_app.log.debug('Wait result: %s' % re_match)
 			return (re_match, None)
 
 	def running(self):
@@ -219,8 +229,17 @@ class ScLangProcess:
 			self.launched = False
 
 	def execute(self, command):
-		if not(self.launched): raise Exception("Process not running")
-		if not(self.ready): raise Exception("Process not ready - may not have launched correctly")
+		global_app.log.debug('Executing in sclang: %s' % command)
+		if not(self.launched):
+			global_app.log.debug('sclang was not launched.')
+			global_app.log.debug('output:\n%s' % self.output)
+			global_app.log.debug('error:\n%s' % self.error)
+			raise Exception("Process not running")
+		if not(self.ready):
+			global_app.log.debug('sclang launched but not ready.')
+			global_app.log.debug('output:\n%s' % self.output)
+			global_app.log.debug('error:\n%s' % self.error)
+			raise Exception("Process not ready - may not have launched correctly")
 		self.proc.stdin.write("%s %s" % (command, chr(0x1b)))
 
 
