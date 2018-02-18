@@ -141,7 +141,7 @@ class GitHubEndpoint:
 				shutil.move(quark_destination, quark_destination_tmp)
 				shutil.move(os.path.join(quark_destination_tmp, folders[0]), quark_destination)
 				shutil.rmtree(quark_destination_tmp)
-		else:req.content
+		else:
 			raise Exception('Problem with file download: $s (size %s)' % (zip_destination, size))
 
 		return quark_destination
