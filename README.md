@@ -60,7 +60,7 @@ Requirements
 - semantic-version==2.2.0
 - wsgiref==0.1.2
 - nose==1.3.0
-- gitpython==0.3.1-beta2
+- gitpython==0.3.2
 - PyDispatcher==2.0.3
 - cement==2.10.2
 - colorama
