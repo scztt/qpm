@@ -61,9 +61,8 @@ Requirements
 - wsgiref==0.1.2
 - nose==1.3.0
 - gitpython==0.3.1-beta2
-- gevent==1.0.1
 - PyDispatcher==2.0.3
-- cement
+- cement==2.10.2
 - colorama
 - appdirs
 - pyyaml
