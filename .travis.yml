@@ -8,7 +8,7 @@ python:
  - "2.7"
 
 install:
- - sudo pip install . -q
+ - sudo pip2 install . -q
  - curl -s -L https://github.com/supercollider/supercollider/releases/download/Version-3.7.1/SuperCollider-OSX-3.7.1.zip -o SuperCollider-Mac.zip
  - unzip -qq -d . SuperCollider-Mac.zip
  - qpm quark checkout CommonTests CommonTestsGUI UnitTesting API --location $HOME/Quarks
