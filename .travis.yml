@@ -1,0 +1,23 @@
+compiler:
+ - gcc
+
+os:
+ - osx
+
+python:
+ - "2.7"
+
+install:
+ - sudo pip2 install . -q
+ - curl -s -L https://github.com/supercollider/supercollider/releases/download/Version-3.7.1/SuperCollider-OSX-3.7.1.zip -o SuperCollider-Mac.zip
+ - unzip -qq -d . SuperCollider-Mac.zip
+ - qpm quark checkout CommonTests CommonTestsGUI UnitTesting API --location $HOME/Quarks
+ - qpm test.list -o --path ./SuperCollider/SuperCollider.app
+ - cp ./qpm/scscripts/travis_run_prototype.json ./travis_test_run.json
+
+script:
+ - qpm test.run -l ./travis_test_run.json --path ./SuperCollider/SuperCollider.app --include $HOME/Quarks
+
+notifications:
+  on_success: change
+  on_failure: change
