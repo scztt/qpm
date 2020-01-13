@@ -100,10 +100,10 @@
 
 					tests.add(newTest);
 				};
-				tests.remove(wildcardTest);
-				~writeResult.(test_record, file);
 			}
 		};
+		tests.removeAll(toExpand);
+		~writeResult.(test_record, file);
 
 		// Ensure excluded tests are not run
 		toExclude = tests.select({
