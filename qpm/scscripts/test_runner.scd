@@ -76,18 +76,22 @@
 		"Expanding %\n".postf(toExpand);
 		toExpand.do {
 			| wildcardTest |
-			var allTests, newTest, class;
+			var allTests, newTest, class, suite;
 
-			class = wildcardTest["suite"].asSymbol.asClass;
+			suite = wildcardTest["suite"];
+			class = suite.asSymbol.asClass;
 
 			if (class.respondsTo(\findTestMethods).not && class.notNil) {
 				class = ("Test" ++ class.name.asString).asSymbol.asClass;
 			};
 
 			if (class.isNil) {
-				wildcardTest["error"] = "Class % not found".format(class);
-				wildcardTest["completed"] = true;
-				~writeResult.(test_record, file);
+				newTest = Dictionary.newFrom((
+					"suite": suite,
+					"error": "Class % not found".format(suite),
+					"completed": true,
+				));
+				tests.add(newTest);
 			} {
 				class.tryPerform(\findTestMethods).do {
 					| test |
