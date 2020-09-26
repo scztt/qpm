@@ -176,11 +176,21 @@ class ScLangProcess:
 		else:
 			return self.ready
 
-	def wait_for(self, regex, timeout=30, kill_on_error=True):
+	def wait_for(self, regex, timeout=30, kill_on_error=True, filter_allowed_errors=True):
 		output = ""
 		error = ""
 		start_time = time.time()
 		re_match = None
+
+		# Set of errors which can be safely ignored. On macOS, running sclang on Travis and from within a
+		# bundle sometimes produces spurious warnings and errors. These can be safely ignored, as they will
+		# not affect standard usage.
+		allowed_error_regexes = [
+			'The available OpenGL surface format was either not version 3.2 or higher or not a Core Profile.',
+			'Chromium on macOS will fall back to software rendering in this case.',
+			'Hardware acceleration and features such as WebGL will not be available.',
+			r'\[\d*/\d*\.\d*:WARNING:resource_bundle_qt.cpp\(\d*\)\] locale_file_path.empty\(\) for locale',
+			]
 
 		set_non_block(self.proc.stdin)
 		set_non_block(self.proc.stdout)
@@ -193,6 +203,14 @@ class ScLangProcess:
 			output += read
 			error += safe_read(self.proc.stderr)
 			re_match = re.search(regex, output, re.DOTALL)
+
+			if filter_allowed_errors:
+				for allowed_error_regex in allowed_error_regexes:
+					prev_error = error
+					error = re.sub(allowed_error_regex, '', error)
+					if error != prev_error:
+						global_app.log.debug('Filtered stderr using regex \'%s\'' % allowed_error_regex)
+				error = error.strip()
 
 			if error and kill_on_error:
 				global_app.log.debug('Killing because of error')
