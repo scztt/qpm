@@ -21,7 +21,7 @@ def main():
         sys.argv += ['--debug']
 
     global global_app
-    global_app = QPMApp(output_handler=QPMOutput, config_defauslts=settings.defaults)
+    global_app = QPMApp(output_handler=QPMOutput, config_defaults=settings.defaults)
     try:
         global_app.setup()
         global_app.run()
